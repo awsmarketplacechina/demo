@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { TodoTable } from './components/todo-table'
-import { mockTodoItems, type TodoItem } from './types/todo'
+import { mockTodoItems } from './types/todo'
 import { Header } from './components/header'
+import { OwnerView } from './components/owner-view'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'todo' | 'api' | 'owner'>('todo')
+  const [currentUser] = useState('John Doe') // Simulated logged-in user
   const [inputText, setInputText] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +60,7 @@ function App() {
         {activeTab === 'owner' && (
           <div>
             <h1 className="mb-8 text-3xl font-bold">Owner View</h1>
-            <TodoTable data={mockTodoItems.filter((item: TodoItem) => item.owner === 'John Doe')} />
+            <OwnerView data={mockTodoItems} ownerName={currentUser} />
           </div>
         )}
         

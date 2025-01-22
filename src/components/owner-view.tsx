@@ -8,7 +8,7 @@ interface OwnerViewProps {
 }
 
 export function OwnerView({ data, ownerName = 'John Doe' }: OwnerViewProps) {
-  const [editingTask, setEditingTask] = useState<TodoItem | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +34,6 @@ export function OwnerView({ data, ownerName = 'John Doe' }: OwnerViewProps) {
         throw new Error('Failed to update task');
       }
 
-      setEditingTask(null);
       // In a real application, we would refresh the data here
       alert('Task updated successfully!');
     } catch (err) {
