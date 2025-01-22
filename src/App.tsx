@@ -4,10 +4,22 @@ import { Textarea } from "@/components/ui/textarea"
 import { TodoTable } from './components/todo-table'
 import { mockTodoItems } from './types/todo'
 import { Header } from './components/header'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 function App() {
   const [activeTab, setActiveTab] = useState<'todo' | 'api'>('todo')
-  const [inputText, setInputText] = useState('')
+  const templates = [
+    "Parse meeting notes and create follow up actions",
+    "Summarize user feedback"
+  ]
+  const [inputText, setInputText] = useState(templates[0])
+  const [selectedTemplate, setSelectedTemplate] = useState(templates[0])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,6 +68,24 @@ function App() {
         ) : (
           <div className="max-w-2xl mx-auto space-y-4">
             <h1 className="text-2xl font-bold text-center mb-6">Text Input</h1>
+            <Select
+              value={selectedTemplate}
+              onValueChange={(value) => {
+                setSelectedTemplate(value);
+                setInputText(value);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map((t) => (
+                  <SelectItem value={t} key={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Textarea 
               placeholder="Enter your text here..."
               className="min-h-[200px] w-full p-4"
