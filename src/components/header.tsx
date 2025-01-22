@@ -26,7 +26,7 @@ export const Header: FC<HeaderProps> = ({ activeTab, onTabSwitch }: HeaderProps)
         }`}
         onClick={() => onTabSwitch('api')}
       >
-        API Gateway Demo
+        Text Input
       </button>
     </div>
   );

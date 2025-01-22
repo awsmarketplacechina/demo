@@ -55,7 +55,7 @@ function App() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto space-y-4">
-            <h1 className="text-2xl font-bold text-center mb-6">API Gateway Demo</h1>
+            <h1 className="text-2xl font-bold text-center mb-6">Text Input</h1>
             <Textarea 
               placeholder="Enter your text here..."
               className="min-h-[200px] w-full p-4"
