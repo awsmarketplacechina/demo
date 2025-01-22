@@ -17,27 +17,22 @@ export function OwnerView({ data, ownerName = 'John Doe' }: OwnerViewProps) {
     setError(null);
 
     try {
-      const response = await fetch('https://dummy-api-gateway.execute-api.us-east-1.amazonaws.com/prod/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          taskId,
-          owner: ownerName,
-          status: updatedStatus,
-          comments: updatedComments,
-        }),
+      // Simulate API call with a delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // For demonstration, log the update payload
+      console.log('Task Update:', {
+        taskId,
+        owner: ownerName,
+        status: updatedStatus,
+        comments: updatedComments,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update task');
-      }
-
-      // In a real application, we would refresh the data here
+      // Simulate successful response
       alert('Task updated successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError('Failed to update task. Please try again.');
+      console.error('Update Error:', err);
     } finally {
       setIsLoading(false);
     }
