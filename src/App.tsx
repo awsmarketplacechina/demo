@@ -3,12 +3,17 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { TodoTable } from './components/todo-table'
 import { mockTodoItems } from './types/todo'
+import { Header } from './components/header'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'api' | 'todo'>('todo')
+  const [activeTab, setActiveTab] = useState<'todo' | 'api'>('todo')
   const [inputText, setInputText] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleTabSwitch = (tab: 'todo' | 'api') => {
+    setActiveTab(tab)
+  }
 
   const handleSubmit = async () => {
     setIsLoading(true)
@@ -41,28 +46,7 @@ function App() {
   return (
     <div className="min-h-screen bg-zinc-50 p-4">
       <div className="mx-auto max-w-7xl space-y-4">
-        <div className="flex space-x-4 border-b border-zinc-200">
-          <button
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'todo'
-                ? 'border-b-2 border-zinc-900 text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-            onClick={() => setActiveTab('todo')}
-          >
-            ToDo List
-          </button>
-          <button
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'api'
-                ? 'border-b-2 border-zinc-900 text-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-            onClick={() => setActiveTab('api')}
-          >
-            API Gateway Demo
-          </button>
-        </div>
+        <Header activeTab={activeTab} onTabSwitch={handleTabSwitch} />
 
         {activeTab === 'todo' ? (
           <div>

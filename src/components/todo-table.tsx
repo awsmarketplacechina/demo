@@ -88,14 +88,14 @@ export function TodoTable({ data }: TodoTableProps) {
         <label className="text-sm font-medium">Filter by Status:</label>
         <Select
           onValueChange={(value) => {
-            table.getColumn('status')?.setFilterValue(value);
+            table.getColumn('status')?.setFilterValue(value === 'ALL' ? '' : value);
           }}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="ALL">All</SelectItem>
             <SelectItem value="Not Started">Not Started</SelectItem>
             <SelectItem value="In Progress">In Progress</SelectItem>
             <SelectItem value="Completed">Completed</SelectItem>
