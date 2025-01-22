@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from "./components/ui/button"
+import { Textarea } from "./components/ui/textarea"
 import { TodoTable } from './components/todo-table'
 import { mockTodoItems } from './types/todo'
 import { Header } from './components/header'
@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "./components/ui/select"
 
 function App() {
   const [activeTab, setActiveTab] = useState<'todo' | 'api'>('todo')
