@@ -28,6 +28,57 @@ const ResourceSection = ({ title, code, isAnalyzed }: ResourceSectionProps) => (
 )
 
 function App() {
+  const mockDeploymentProgress = {
+    ram: {
+      steps: [
+        "准备部署 IAM 用户配置...",
+        "创建 IAM 用户...",
+        "配置用户权限...",
+        "设置多因素认证...",
+        "IAM 用户配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    },
+    network: {
+      steps: [
+        "准备部署网络配置...",
+        "创建 VPC...",
+        "配置子网...",
+        "设置路由表...",
+        "配置安全组...",
+        "网络配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    },
+    compute: {
+      steps: [
+        "准备部署计算资源...",
+        "创建 EC2 实例...",
+        "配置实例类型...",
+        "设置自动扩展...",
+        "配置负载均衡...",
+        "计算资源配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    },
+    storage: {
+      steps: [
+        "准备部署存储资源...",
+        "创建 S3 存储桶...",
+        "配置存储策略...",
+        "设置生命周期规则...",
+        "存储资源配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    }
+  }
+
+  type ResourceType = keyof typeof mockDeploymentProgress
+
   const [currentPage, setCurrentPage] = useState(1)
   const [verificationPassed, setVerificationPassed] = useState(false)
   const [infrastructureChecked, setInfrastructureChecked] = useState(false)
@@ -35,8 +86,9 @@ function App() {
   const [mockThoughts, setMockThoughts] = useState<string[]>([])
   const [verificationPhase, setVerificationPhase] = useState<'testing' | 'preview' | 'deployment' | 'complete'>('testing')
   const [verificationThoughts, setVerificationThoughts] = useState<string[]>([])
-  const [selectedResources, setSelectedResources] = useState<string[]>([])
+  const [selectedResources, setSelectedResources] = useState<ResourceType[]>([])
   const [deploymentInProgress, setDeploymentInProgress] = useState(false)
+  const [deploymentProgress, setDeploymentProgress] = useState(mockDeploymentProgress)
   const [formData, setFormData] = useState({
     projectName: '',
     sourcePlatform: 'alicloud',
@@ -162,6 +214,55 @@ resource "aws_s3_bucket_acl" "example" {
     "验证完成，资源映射正确"
   ]
 
+  const mockDeploymentProgress = {
+    ram: {
+      steps: [
+        "准备部署 IAM 用户配置...",
+        "创建 IAM 用户...",
+        "配置用户权限...",
+        "设置多因素认证...",
+        "IAM 用户配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    },
+    network: {
+      steps: [
+        "准备部署网络配置...",
+        "创建 VPC...",
+        "配置子网...",
+        "设置路由表...",
+        "配置安全组...",
+        "网络配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    },
+    compute: {
+      steps: [
+        "准备部署计算资源...",
+        "创建 EC2 实例...",
+        "配置实例类型...",
+        "设置自动扩展...",
+        "配置负载均衡...",
+        "计算资源配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    },
+    storage: {
+      steps: [
+        "准备部署存储资源...",
+        "创建 S3 存储桶...",
+        "配置存储策略...",
+        "设置生命周期规则...",
+        "存储资源配置完成"
+      ],
+      currentStep: 0,
+      status: "pending" as "pending" | "in_progress" | "completed" | "failed"
+    }
+  }
+
   // Track which resources have been analyzed
   const [analyzedResources, setAnalyzedResources] = useState<string[]>([])
 
@@ -237,6 +338,63 @@ resource "aws_s3_bucket_acl" "example" {
   const handlePrevious = () => {
     setCurrentPage(prev => prev - 1)
     setVerificationPassed(false)
+  }
+
+  const startDeployment = () => {
+    setVerificationPhase('complete')
+    setDeploymentInProgress(true)
+    const resourceOrder: ResourceType[] = ['ram', 'network', 'compute', 'storage']
+    let currentResourceIndex = 0
+    
+    const deployNextResource = () => {
+      if (currentResourceIndex >= resourceOrder.length) {
+        setDeploymentInProgress(false)
+        return
+      }
+
+      const resourceType = resourceOrder[currentResourceIndex]
+      setDeploymentProgress(prev => ({
+        ...prev,
+        [resourceType]: {
+          ...prev[resourceType as ResourceType],
+          status: 'in_progress' as const,
+          currentStep: 0
+        }
+      }))
+
+      let currentStep = 0
+      const resource = mockDeploymentProgress[resourceType]
+      
+      const processStep = () => {
+        if (currentStep >= resource.steps.length) {
+          setDeploymentProgress(prev => ({
+            ...prev,
+            [resourceType]: {
+              ...prev[resourceType as ResourceType],
+              status: 'completed' as const
+            }
+          }))
+          currentResourceIndex++
+          setTimeout(deployNextResource, 1000)
+          return
+        }
+
+        setDeploymentProgress(prev => ({
+          ...prev,
+          [resourceType]: {
+            ...prev[resourceType as ResourceType],
+            currentStep: currentStep
+          }
+        }))
+
+        currentStep++
+        setTimeout(processStep, 2000)
+      }
+
+      processStep()
+    }
+
+    deployNextResource()
   }
 
   return (
@@ -651,6 +809,61 @@ resource "aws_s3_bucket_acl" "example" {
                 </div>
               )}
 
+              {verificationPhase === 'complete' && (
+                <div className="space-y-6">
+                  <div className="p-6 bg-blue-50 rounded-lg">
+                    <h3 className="font-medium mb-4">部署进度</h3>
+                    <div className="space-y-6">
+                      {Object.entries(deploymentProgress).map(([key, resource]) => (
+                        <div key={key} className="bg-white p-4 rounded-lg shadow-sm">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">
+                              {key === 'ram' ? 'IAM 用户' :
+                               key === 'network' ? '网络' :
+                               key === 'compute' ? '计算' : '存储'}
+                            </h4>
+                            <span className={`px-2 py-1 rounded text-sm ${
+                              resource.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              resource.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                              resource.status === 'failed' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {resource.status === 'completed' ? '已完成' :
+                               resource.status === 'in_progress' ? '部署中' :
+                               resource.status === 'failed' ? '失败' : '等待中'}
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            {resource.steps.map((step, index) => (
+                              <div key={index} className="flex items-start space-x-3">
+                                <div className="mt-1.5">
+                                  {index === resource.currentStep && resource.status === 'in_progress' ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                                  ) : (
+                                    <div className={`h-2 w-2 rounded-full ${
+                                      index < resource.currentStep || resource.status === 'completed'
+                                        ? 'bg-green-500'
+                                        : resource.status === 'failed' && index === resource.currentStep
+                                        ? 'bg-red-500'
+                                        : 'bg-gray-300'
+                                    }`} />
+                                  )}
+                                </div>
+                                <p className={`text-sm ${
+                                  index < resource.currentStep || resource.status === 'completed'
+                                    ? 'text-gray-900'
+                                    : 'text-gray-500'
+                                }`}>{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-4 mt-8">
                 <Button type="button" variant="outline" onClick={handlePrevious}>
                   上一步
@@ -675,7 +888,7 @@ resource "aws_s3_bucket_acl" "example" {
                 {verificationPhase === 'deployment' && (
                   <Button
                     type="button"
-                    onClick={() => setVerificationPhase('complete')}
+                    onClick={startDeployment}
                     disabled={selectedResources.length === 0 || deploymentInProgress}
                   >
                     确认部署
