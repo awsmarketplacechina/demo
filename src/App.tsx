@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Button } from "./components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card"
+import { Input } from "./components/ui/input"
+import { Label } from "./components/ui/label"
+import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group"
 import { Loader2 } from "lucide-react"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./components/ui/accordion"
+import { ResourceTopology } from "./components/ResourceTopology"
 
 interface ResourceSectionProps {
   title: string
@@ -175,31 +176,53 @@ resource "aws_s3_bucket_acl" "example" {
     "将阿里云 OSS 存储桶映射到 AWS S3..."
   ]
 
-  const mockAwsAdvantages = {
-    ram: [
-      '细粒度的访问控制，支持精确的权限管理',
-      '多因素认证（MFA）增强安全性',
-      '与其他AWS服务无缝集成，统一的身份管理',
-      '支持联合身份和单点登录（SSO）'
-    ],
-    network: [
-      '灵活的网络配置，支持复杂网络架构',
-      '强大的安全组和网络ACL管理',
-      '全球基础设施，低延迟高可用',
-      '与云服务无缝集成的网络功能'
-    ],
-    compute: [
-      '丰富的实例类型满足不同需求',
-      '自动扩展能力，按需调整资源',
-      '按需付费模式降低成本',
-      '全球区域部署，就近服务用户'
-    ],
-    storage: [
-      '全球分布式存储，数据高可用',
-      '灵活的生命周期管理策略',
-      '多种存储类型满足不同场景',
-      '按需付费，成本优化'
-    ]
+  // Initial empty state for AWS advantages
+  const [awsAdvantages, setAwsAdvantages] = useState<Record<string, string[]>>({
+    ram: [],
+    network: [],
+    compute: [],
+    storage: []
+  })
+
+  // Function to analyze and generate AWS advantages
+  const generateAwsAdvantages = (resourceType: string, sourceCode: string, awsCode: string) => {
+    // Simulated AI analysis based on resource comparison
+    const advantages: string[] = []
+    
+    if (resourceType === 'ram') {
+      if (awsCode.includes('force_destroy')) {
+        advantages.push('支持资源完全清理，降低残留安全风险')
+      }
+      if (awsCode.includes('tags')) {
+        advantages.push('强大的标签管理功能，便于资源分类和权限控制')
+      }
+      advantages.push('与其他AWS服务无缝集成，统一的身份管理')
+      advantages.push('支持多因素认证（MFA）增强安全性')
+    } else if (resourceType === 'network') {
+      if (awsCode.includes('vpc')) {
+        advantages.push('灵活的VPC配置，支持复杂网络架构')
+      }
+      advantages.push('全球基础设施，低延迟高可用')
+      advantages.push('强大的安全组和网络ACL管理')
+    } else if (resourceType === 'compute') {
+      if (awsCode.includes('instance_type')) {
+        advantages.push('丰富的实例类型满足不同需求')
+      }
+      if (sourceCode.includes('PostPaid')) {
+        advantages.push('灵活的计费模式，按需付费降低成本')
+      }
+      advantages.push('支持自动扩展，根据负载自动调整资源')
+    } else if (resourceType === 'storage') {
+      if (awsCode.includes('bucket')) {
+        advantages.push('全球分布式存储，数据高可用')
+      }
+      if (awsCode.includes('acl')) {
+        advantages.push('细粒度的访问控制和权限管理')
+      }
+      advantages.push('多种存储类型满足不同场景需求')
+    }
+    
+    return advantages
   }
 
   const mockVerificationThoughts = [
@@ -241,12 +264,26 @@ resource "aws_s3_bucket_acl" "example" {
       const addThought = (index: number) => {
         if (index < mockDevinThoughts.length) {
           setMockThoughts(prev => [...prev, mockDevinThoughts[index]])
-          // Add resource to analyzed list based on thought index
-          if (index === 1) setAnalyzedResources(prev => [...prev, 'ram'])
-          if (index === 2) setAnalyzedResources(prev => [...prev, 'network'])
-          if (index === 3) setAnalyzedResources(prev => [...prev, 'compute'])
+          // Add resource to analyzed list and generate advantages
+          if (index === 1) {
+            setAnalyzedResources(prev => [...prev, 'ram'])
+            const advantages = generateAwsAdvantages('ram', mockSourceResources.ram, mockAwsResources.ram)
+            setAwsAdvantages(prev => ({ ...prev, ram: advantages }))
+          }
+          if (index === 2) {
+            setAnalyzedResources(prev => [...prev, 'network'])
+            const advantages = generateAwsAdvantages('network', mockSourceResources.network, mockAwsResources.network)
+            setAwsAdvantages(prev => ({ ...prev, network: advantages }))
+          }
+          if (index === 3) {
+            setAnalyzedResources(prev => [...prev, 'compute'])
+            const advantages = generateAwsAdvantages('compute', mockSourceResources.compute, mockAwsResources.compute)
+            setAwsAdvantages(prev => ({ ...prev, compute: advantages }))
+          }
           if (index === 4) {
             setAnalyzedResources(prev => [...prev, 'storage'])
+            const advantages = generateAwsAdvantages('storage', mockSourceResources.storage, mockAwsResources.storage)
+            setAwsAdvantages(prev => ({ ...prev, storage: advantages }))
             setResourceMappingComplete(true)
           }
           setTimeout(() => addThought(index + 1), 1500)
@@ -349,8 +386,8 @@ resource "aws_s3_bucket_acl" "example" {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto p-8 pb-48"> {/* Added bottom padding for fixed elements */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">迁移工具</h1>
           <div className="space-x-4">
@@ -458,13 +495,15 @@ resource "aws_s3_bucket_acl" "example" {
                   />
                 </div>
 
-                <div className="flex justify-end space-x-4 pt-6">
-                  <Button type="button" variant="outline" onClick={handleSave}>
-                    保存
-                  </Button>
-                  <Button type="button" onClick={handleNext}>
-                    下一步
-                  </Button>
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                  <div className="container mx-auto flex justify-end space-x-4">
+                    <Button type="button" variant="outline" onClick={handleSave}>
+                      保存
+                    </Button>
+                    <Button type="button" onClick={handleNext}>
+                      下一步
+                    </Button>
+                  </div>
                 </div>
               </form>
             </CardContent>
@@ -487,17 +526,19 @@ resource "aws_s3_bucket_acl" "example" {
                   </div>
                 )}
                 
-                <div className="flex justify-end space-x-4 w-full mt-8">
-                  <Button type="button" variant="outline" onClick={handlePrevious}>
-                    上一步
-                  </Button>
-                  <Button 
-                    type="button" 
-                    onClick={handleNext}
-                    disabled={!verificationPassed}
-                  >
-                    检查通过下一步
-                  </Button>
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                  <div className="container mx-auto flex justify-end space-x-4">
+                    <Button type="button" variant="outline" onClick={handlePrevious}>
+                      上一步
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleNext}
+                      disabled={!verificationPassed}
+                    >
+                      检查通过下一步
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -529,17 +570,19 @@ resource "aws_s3_bucket_acl" "example" {
                   </div>
                 )}
                 
-                <div className="flex justify-end space-x-4 w-full mt-8">
-                  <Button type="button" variant="outline" onClick={handlePrevious}>
-                    上一步
-                  </Button>
-                  <Button 
-                    type="button" 
-                    onClick={handleNext}
-                    disabled={!infrastructureChecked}
-                  >
-                    检查通过下一步
-                  </Button>
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                  <div className="container mx-auto flex justify-end space-x-4">
+                    <Button type="button" variant="outline" onClick={handlePrevious}>
+                      上一步
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleNext}
+                      disabled={!infrastructureChecked}
+                    >
+                      检查通过下一步
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -550,52 +593,64 @@ resource "aws_s3_bucket_acl" "example" {
               <CardTitle>资源映射分析</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-8">
-                {/* Left side: Source Platform Resources */}
-                <div>
-                  <h3 className="font-medium text-lg mb-4">源平台资源</h3>
-                  <Accordion type="single" collapsible className="w-full">
-                    <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} />
-                    <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} />
-                    <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} />
-                    <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} />
-                  </Accordion>
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Left side: Source Platform Resources */}
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">源平台资源</h3>
+                    <Accordion type="single" collapsible className="w-full">
+                      <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} />
+                      <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} />
+                      <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} />
+                      <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} />
+                    </Accordion>
+                  </div>
+
+                  {/* Right side: AWS Resources */}
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
+                    <Accordion type="single" collapsible className="w-full">
+                      <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} />
+                      <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} />
+                      <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} />
+                      <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} />
+                    </Accordion>
+                  </div>
                 </div>
 
-                {/* Right side: AWS Resources */}
-                <div>
-                  <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
-                  <Accordion type="single" collapsible className="w-full">
-                    <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} />
-                    <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} />
-                    <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} />
-                    <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} />
-                  </Accordion>
-                </div>
-              </div>
-
-              {/* AWS Advantages */}
-              <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                <h3 className="font-medium mb-4">AWS 组件优势</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  {Object.entries(mockAwsAdvantages).map(([key, advantages]) => (
-                    <div key={key} className="p-4 bg-white rounded-lg shadow-sm">
-                      <h4 className="font-medium mb-2">
-                        {key === 'ram' ? 'IAM 用户' :
-                         key === 'network' ? '网络' :
-                         key === 'compute' ? '计算' : '存储'}
-                      </h4>
-                      <ul className="space-y-2">
-                        {advantages.map((advantage, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <div className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
-                            <span className="text-gray-600">{advantage}</span>
-                          </li>
-                        ))}
-                      </ul>
+                {/* AWS Advantages - Only show after mapping complete */}
+                {resourceMappingComplete ? (
+                  <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium mb-4">AWS 组件优势</h3>
+                    <div className="grid grid-cols-2 gap-6">
+                      {Object.entries(awsAdvantages).map(([key, advantages]: [string, string[]]) => (
+                        <div key={key} className="p-4 bg-white rounded-lg shadow-sm">
+                          <h4 className="font-medium mb-2">
+                            {key === 'ram' ? 'IAM 用户' :
+                             key === 'network' ? '网络' :
+                             key === 'compute' ? '计算' : '存储'}
+                          </h4>
+                          <ul className="space-y-2">
+                            {advantages.map((advantage: string, index: number) => (
+                              <li key={index} className="flex items-start space-x-2">
+                                <div className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
+                                <span className="text-gray-600">{advantage}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : analyzedResources.length > 0 && (
+                  <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium mb-4">AWS 组件优势分析中...</h3>
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                      <span className="text-gray-600">正在分析AWS服务优势，请稍等...</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Devin's Thoughts */}
@@ -623,17 +678,19 @@ resource "aws_s3_bucket_acl" "example" {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4 mt-8">
-                <Button type="button" variant="outline" onClick={handlePrevious}>
-                  上一步
-                </Button>
-                <Button 
-                  type="button" 
-                  onClick={handleNext}
-                  disabled={!resourceMappingComplete}
-                >
-                  验证&amp;部署
-                </Button>
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                <div className="container mx-auto flex justify-end space-x-4">
+                  <Button type="button" variant="outline" onClick={handlePrevious}>
+                    上一步
+                  </Button>
+                  <Button 
+                    type="button" 
+                    onClick={handleNext}
+                    disabled={!resourceMappingComplete}
+                  >
+                    验证&amp;部署
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -812,43 +869,53 @@ resource "aws_s3_bucket_acl" "example" {
                       ))}
                     </div>
                   </div>
+                  {!deploymentInProgress && Object.values(deploymentProgress).every(r => r.status === 'completed') && (
+                    <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                      <h3 className="font-medium mb-4">已部署的AWS资源拓扑图</h3>
+                      <ResourceTopology />
+                    </div>
+                  )}
                 </div>
               )}
 
-              <div className="flex justify-end space-x-4 mt-8">
-                <Button type="button" variant="outline" onClick={handlePrevious}>
-                  上一步
-                </Button>
-                {verificationPhase === 'testing' && (
-                  <Button
-                    type="button"
-                    onClick={() => setVerificationPhase('preview')}
-                    disabled={verificationThoughts.length < mockVerificationThoughts.length}
-                  >
-                    查看预览
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                <div className="container mx-auto flex justify-end space-x-4">
+                  <Button type="button" variant="outline" onClick={handlePrevious}>
+                    上一步
                   </Button>
-                )}
-                {verificationPhase === 'preview' && (
-                  <Button
-                    type="button"
-                    onClick={() => setVerificationPhase('deployment')}
-                  >
-                    开始部署
-                  </Button>
-                )}
-                {verificationPhase === 'deployment' && (
-                  <Button
-                    type="button"
-                    onClick={startDeployment}
-                    disabled={selectedResources.length === 0 || deploymentInProgress}
-                  >
-                    确认部署
-                  </Button>
-                )}
+                  {verificationPhase === 'testing' && (
+                    <Button
+                      type="button"
+                      onClick={() => setVerificationPhase('preview')}
+                      disabled={verificationThoughts.length < mockVerificationThoughts.length}
+                    >
+                      查看预览
+                    </Button>
+                  )}
+                  {verificationPhase === 'preview' && (
+                    <Button
+                      type="button"
+                      onClick={() => setVerificationPhase('deployment')}
+                    >
+                      开始部署
+                    </Button>
+                  )}
+                  {verificationPhase === 'deployment' && (
+                    <Button
+                      type="button"
+                      onClick={startDeployment}
+                      disabled={selectedResources.length === 0 || deploymentInProgress}
+                    >
+                      确认部署
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* AWS Advantages Section removed from bottom */}
       </div>
     </div>
   )
