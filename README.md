@@ -1,50 +1,54 @@
-# React + TypeScript + Vite
+# Spring MVC Aliyun Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a Spring MVC application that integrates with Aliyun OSS and RDS, featuring a simple web interface for product management and file uploads.
 
-Currently, two official plugins are available:
+## Configuration
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The application uses environment variables for configuration. You need to set the following environment variables:
 
-## Expanding the ESLint configuration
+### Aliyun OSS Configuration
+- `ALIYUN_OSS_ENDPOINT`: Aliyun OSS endpoint URL
+- `ALIYUN_ACCESS_KEY_ID`: Your Aliyun Access Key ID
+- `ALIYUN_ACCESS_KEY_SECRET`: Your Aliyun Access Key Secret
+- `ALIYUN_OSS_BUCKET_NAME`: Your OSS bucket name
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Aliyun RDS Configuration
+- `ALIYUN_RDS_URL`: Complete JDBC URL for your RDS instance
+- `ALIYUN_RDS_USERNAME`: RDS database username
+- `ALIYUN_RDS_PASSWORD`: RDS database password
 
-- Configure the top-level `parserOptions` property like this:
+### Deployment Configuration
+- `ALIYUN_ECS_HOST`: Your ECS instance IP or hostname
+- `ALIYUN_SSH_USERNAME`: SSH username for ECS instance
+- `ALIYUN_SSH_PRIVATE_KEY`: SSH private key for ECS instance
+- `ALIYUN_REGION`: Aliyun region (e.g., cn-hangzhou)
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Deployment
+
+The application is automatically deployed to Aliyun ECS using GitHub Actions when changes are pushed to the main branch. The deployment workflow:
+
+1. Builds the application
+2. Runs tests
+3. Packages the application
+4. Deploys to the specified ECS instance
+
+### GitHub Secrets
+
+The following secrets need to be configured in your GitHub repository:
+
+- `ALIYUN_ACCESS_KEY_ID`
+- `ALIYUN_ACCESS_KEY_SECRET`
+- `ALIYUN_REGION`
+- `ALIYUN_ECS_HOST`
+- `ALIYUN_ECS_USERNAME`
+- `ALIYUN_ECS_SSH_KEY`
+
+## Local Development
+
+To run the application locally:
+
+```bash
+./mvnw spring-boot:run
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+The application will be available at http://localhost:8080
