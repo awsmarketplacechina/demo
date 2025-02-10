@@ -424,6 +424,7 @@ resource "aws_s3_bucket_acl" "example" {
                   {checkPhase === 'source_permission' && (
                     <div className="space-y-2">
                       <p>阿里云账号：{formData.sourceAccount}</p>
+                      <p>正在验证阿里云平台账号权限，请稍等...</p>
                     </div>
                   )}
                   {checkPhase === 'aws_permission' && (
