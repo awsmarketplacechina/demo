@@ -433,9 +433,7 @@ resource "aws_s3_bucket_acl" "example" {
                   )}
                   {checkPhase === 'source_resources' && (
                     <div className="space-y-2">
-                      <p>源平台：{formData.sourcePlatform === 'alicloud' ? '阿里云' : ''}</p>
-                      <p>账号：{formData.sourceAccount}</p>
-                      <p>项目名称：{formData.projectName}</p>
+                      <p>阿里云账号：{formData.sourceAccount}</p>
                     </div>
                   )}
                 </div>
