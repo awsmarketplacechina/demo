@@ -334,6 +334,16 @@ resource "aws_s3_bucket_acl" "example" {
       if (prev === 3) return 6  // From resource mapping directly to deployment
       return prev
     })
+    // Reset verification state when moving to page 3
+    if (currentPage === 2) {
+      setVerificationPassed(false)
+      setVerificationPhase('testing')
+    }
+    // Set deployment state when moving to page 6
+    if (currentPage === 3) {
+      setVerificationPhase('deployment')
+      setSelectedResources(['ram', 'network', 'compute', 'storage'])
+    }
   }
 
   const handlePrevious = () => {
@@ -343,8 +353,12 @@ resource "aws_s3_bucket_acl" "example" {
       if (prev === 2) return 1  // From migration analysis back to basic info
       return prev
     })
+    // Reset states when going back
     setVerificationPassed(false)
     setVerificationPhase('testing')
+    if (currentPage === 6) {
+      setSelectedResources([])
+    }
   }
 
   const startDeployment = () => {
@@ -581,13 +595,13 @@ resource "aws_s3_bucket_acl" "example" {
         ) : currentPage === 2 ? (
           <Card>
             <CardHeader>
-              <CardTitle>资源映射分析</CardTitle>
+              <CardTitle>迁移方案分析</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">
                 {/* Resource Analysis Process */}
                 <div className="p-6 bg-blue-50 rounded-lg">
-                  <h3 className="font-medium mb-4">资源转换分析过程</h3>
+                  <h3 className="font-medium mb-4">迁移方案分析过程</h3>
                   <div className="space-y-3">
                     {mockThoughts.map((thought, index) => (
                       <div key={index} className="flex items-start space-x-3">
