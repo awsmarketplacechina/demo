@@ -28,43 +28,44 @@ export const mockSourceResources = {
 };
 
 export const mockAwsResources = {
-  ram: `resource "aws_iam_user" "example" {
-  name = "example"
-  path = "/"
-  force_destroy = true
-  
-  tags = {
-    Name = "example"
-    Email = "hello.uuu@aaa.com"
-  }
-}`,
-  storage: `resource "aws_s3_bucket" "example" {
-  bucket = "bucket-170309-acl"
-}
-
-resource "aws_s3_bucket_acl" "example" {
-  bucket = aws_s3_bucket.example.id
-  acl    = "private"
-}`,
-  network: `resource "aws_vpc" "main" {
-  cidr_block = "172.16.0.0/12"
-  
-  tags = {
-    Name = "tf_test_foo"
-  }
-}`,
-  compute: `resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = "t2.large"
-  
-  root_block_device {
-    volume_type = "gp2"
-  }
-  
-  tags = {
-    Name = "test_foo"
-  }
-}`
+  ram: `Resources:
+  MyIAMUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: example
+      Path: /
+      Tags:
+        - Key: Name
+          Value: example
+        - Key: Email
+          Value: hello.uuu@aaa.com`,
+  storage: `Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: bucket-170309-acl
+      AccessControl: Private`,
+  network: `Resources:
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.16.0.0/12
+      Tags:
+        - Key: Name
+          Value: tf_test_foo`,
+  compute: `Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0c55b159cbfafe1f0
+      InstanceType: t2.large
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp2
+      Tags:
+        - Key: Name
+          Value: test_foo`
 };
 
 export const mockDeployedResources: DeployedResource[] = [
