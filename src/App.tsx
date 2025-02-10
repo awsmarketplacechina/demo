@@ -430,6 +430,7 @@ resource "aws_s3_bucket_acl" "example" {
                   {checkPhase === 'aws_permission' && (
                     <div className="space-y-2">
                       <p>AWS账号：{formData.awsAccount}</p>
+                      <p>正在验证AWS平台账号权限，请稍等...</p>
                     </div>
                   )}
                   {checkPhase === 'source_resources' && (
