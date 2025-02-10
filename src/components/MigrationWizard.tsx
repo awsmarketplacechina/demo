@@ -524,14 +524,14 @@ export function MigrationWizard() {
                 </div>
 
                 {/* Verification Process Section */}
-                {verificationPhase === 'testing' && (
+                {(verificationPhase === 'testing' || verificationPhase === 'preview' || verificationPhase === 'deployment' || verificationPhase === 'complete') && (
                   <div className="mt-6 p-6 bg-blue-50 rounded-lg">
                     <h3 className="font-medium mb-4">验证过程</h3>
                     <div className="space-y-3">
                       {verificationThoughts.map((thought, index) => (
                         <div key={index} className="flex items-start space-x-3">
                           <div className="mt-1.5">
-                            {index === verificationThoughts.length - 1 ? (
+                            {verificationPhase === 'testing' && index === verificationThoughts.length - 1 ? (
                               <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                             ) : (
                               <div className="h-2 w-2 rounded-full bg-blue-500" />
@@ -541,14 +541,11 @@ export function MigrationWizard() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
-
-                {/* Preview Section */}
-                {verificationPhase === 'preview' && (
-                  <div className="mt-6 p-6 bg-green-50 rounded-lg">
-                    <h3 className="font-medium mb-4">验证完成</h3>
-                    <p className="text-green-600">资源映射验证通过，可以进行下一步操作。</p>
+                    {verificationPhase !== 'testing' && (
+                      <div className="mt-4 p-3 bg-green-50 rounded">
+                        <p className="text-green-600">验证完成，资源映射验证通过。</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
