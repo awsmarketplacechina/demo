@@ -79,22 +79,22 @@ export function MigrationWizard() {
     const advantages: string[] = [];
     
     if (resourceType === 'ram') {
-      if (awsCode.includes('force_destroy')) {
+      if (awsCode.includes('AWS::IAM::User')) {
         advantages.push('支持资源完全清理，降低残留安全风险');
       }
-      if (awsCode.includes('tags')) {
+      if (awsCode.includes('Tags:')) {
         advantages.push('强大的标签管理功能，便于资源分类和权限控制');
       }
       advantages.push('与其他AWS服务无缝集成，统一的身份管理');
       advantages.push('支持多因素认证（MFA）增强安全性');
     } else if (resourceType === 'network') {
-      if (awsCode.includes('vpc')) {
+      if (awsCode.includes('AWS::EC2::VPC')) {
         advantages.push('灵活的VPC配置，支持复杂网络架构');
       }
       advantages.push('全球基础设施，低延迟高可用');
       advantages.push('强大的安全组和网络ACL管理');
     } else if (resourceType === 'compute') {
-      if (awsCode.includes('instance_type')) {
+      if (awsCode.includes('AWS::EC2::Instance')) {
         advantages.push('丰富的实例类型满足不同需求');
       }
       if (sourceCode.includes('PostPaid')) {
@@ -102,10 +102,10 @@ export function MigrationWizard() {
       }
       advantages.push('支持自动扩展，根据负载自动调整资源');
     } else if (resourceType === 'storage') {
-      if (awsCode.includes('bucket')) {
+      if (awsCode.includes('AWS::S3::Bucket')) {
         advantages.push('全球分布式存储，数据高可用');
       }
-      if (awsCode.includes('acl')) {
+      if (awsCode.includes('AccessControl')) {
         advantages.push('细粒度的访问控制和权限管理');
       }
       advantages.push('多种存储类型满足不同场景需求');
