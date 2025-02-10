@@ -194,6 +194,7 @@ export function MigrationWizard() {
     const deployNextResource = () => {
       if (currentResourceIndex >= resourceOrder.length) {
         setDeploymentInProgress(false);
+        handleNext(); // Navigate to next page after deployment is complete
         return;
       }
 
@@ -767,12 +768,6 @@ export function MigrationWizard() {
                   disabled={selectedResources.length === 0 || deploymentInProgress}
                 >
                   开始部署
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!verificationPassed || deploymentInProgress}
-                >
-                  下一步
                 </Button>
               </div>
             )}
