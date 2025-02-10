@@ -285,17 +285,6 @@ resource "aws_s3_bucket_acl" "example" {
       setVerificationThoughts([])
       // Set all resources selected by default
       setSelectedResources(['ram', 'network', 'compute', 'storage'])
-      // Mock verification process
-      const addVerificationThought = (index: number) => {
-        if (index < mockVerificationThoughts.length) {
-          setVerificationThoughts(prev => [...prev, mockVerificationThoughts[index]])
-          if (index === mockVerificationThoughts.length - 1) {
-            setVerificationPassed(true)
-          }
-          setTimeout(() => addVerificationThought(index + 1), 1500)
-        }
-      }
-      setTimeout(() => addVerificationThought(0), 1000)
     }
   }, [currentPage])
 
@@ -304,6 +293,22 @@ resource "aws_s3_bucket_acl" "example" {
       ...prev,
       [field]: e.target.value
     }))
+  }
+
+  const handleVerification = () => {
+    setVerificationPhase('testing')
+    setVerificationThoughts([])
+    // Mock verification process
+    const addVerificationThought = (index: number) => {
+      if (index < mockVerificationThoughts.length) {
+        setVerificationThoughts(prev => [...prev, mockVerificationThoughts[index]])
+        if (index === mockVerificationThoughts.length - 1) {
+          setVerificationPassed(true)
+        }
+        setTimeout(() => addVerificationThought(index + 1), 1500)
+      }
+    }
+    setTimeout(() => addVerificationThought(0), 1000)
   }
 
   const handleCheck = () => {
@@ -736,7 +741,7 @@ resource "aws_s3_bucket_acl" "example" {
                     </Button>
                     <Button 
                       type="button"
-                      onClick={() => setVerificationPhase('testing')}
+                      onClick={handleVerification}
                       disabled={!resourceMappingComplete}
                     >
                       验证
