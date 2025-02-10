@@ -6,6 +6,7 @@ import { Label } from "./components/ui/label"
 import { RadioGroup, RadioGroupItem } from "./components/ui/radio-group"
 import { Loader2 } from "lucide-react"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./components/ui/accordion"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./components/ui/dialog"
 import { ResourceTopology } from "./components/ResourceTopology"
 
 interface ResourceSectionProps {
@@ -91,6 +92,8 @@ function App() {
   const [selectedResources, setSelectedResources] = useState<ResourceType[]>([])
   const [deploymentInProgress, setDeploymentInProgress] = useState(false)
   const [deploymentProgress, setDeploymentProgress] = useState(mockDeploymentProgress)
+  const [showCheckDialog, setShowCheckDialog] = useState(false)
+  const [checkPhase, setCheckPhase] = useState<'source_permission' | 'aws_permission' | 'source_resources' | 'complete'>('source_permission')
   const [formData, setFormData] = useState({
     projectName: '',
     sourcePlatform: 'alicloud',
@@ -315,17 +318,33 @@ resource "aws_s3_bucket_acl" "example" {
     }))
   }
 
-  const handleSave = () => {
-    console.log('Saving form data:', formData)
-    alert('数据已保存')
+  const handleCheck = () => {
+    setShowCheckDialog(true)
+    // Start source platform permission check
+    setTimeout(() => {
+      setCheckPhase('aws_permission')
+      // Start AWS permission check
+      setTimeout(() => {
+        setCheckPhase('source_resources')
+        // Start source resources check
+        setTimeout(() => {
+          setVerificationPassed(true)
+          setInfrastructureChecked(true)
+          setCheckPhase('complete')
+          setTimeout(() => {
+            setShowCheckDialog(false)
+          }, 1000)
+        }, 3000)
+      }, 3000)
+    }, 3000)
   }
 
   const handleNext = () => {
-    setCurrentPage(prev => prev + 1)
+    setCurrentPage(prev => prev === 1 ? 4 : prev + 1)
   }
 
   const handlePrevious = () => {
-    setCurrentPage(prev => prev - 1)
+    setCurrentPage(prev => prev === 4 ? 1 : prev - 1)
     setVerificationPassed(false)
   }
 
@@ -388,6 +407,56 @@ resource "aws_s3_bucket_acl" "example" {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Dialog open={showCheckDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {checkPhase === 'source_permission' ? '源平台账号权限检查' : 
+               checkPhase === 'aws_permission' ? 'AWS账号权限检查' : 
+               checkPhase === 'source_resources' ? '源平台资源检查' : 
+               '检查完成'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-8">
+            {checkPhase !== 'complete' && (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-full mb-4 p-4 bg-gray-50 rounded-lg">
+                  {checkPhase === 'source_permission' && (
+                    <div className="space-y-2">
+                      <p>源平台：{formData.sourcePlatform === 'alicloud' ? '阿里云' : ''}</p>
+                      <p>账号：{formData.sourceAccount}</p>
+                    </div>
+                  )}
+                  {checkPhase === 'aws_permission' && (
+                    <div className="space-y-2">
+                      <p>AWS账号：{formData.awsAccount}</p>
+                    </div>
+                  )}
+                  {checkPhase === 'source_resources' && (
+                    <div className="space-y-2">
+                      <p>源平台：{formData.sourcePlatform === 'alicloud' ? '阿里云' : ''}</p>
+                      <p>账号：{formData.sourceAccount}</p>
+                      <p>项目名称：{formData.projectName}</p>
+                    </div>
+                  )}
+                </div>
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <p className="text-gray-600">
+                  {checkPhase === 'source_permission' ? '正在验证源平台账号权限，请稍等...' : 
+                   checkPhase === 'aws_permission' ? '正在验证AWS账号权限，请稍等...' :
+                   '正在检查源平台资源，请稍等...'}
+                </p>
+              </div>
+            )}
+            {checkPhase === 'complete' && (
+              <div className="text-center text-green-600">
+                检查完成
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="max-w-4xl mx-auto p-8 pb-48"> {/* Added bottom padding for fixed elements */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">迁移工具</h1>
@@ -424,10 +493,6 @@ resource "aws_s3_bucket_acl" "example" {
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="alicloud" id="alicloud" />
                       <Label htmlFor="alicloud">阿里云</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="tencentcloud" id="tencentcloud" />
-                      <Label htmlFor="tencentcloud">腾讯云</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -498,94 +563,19 @@ resource "aws_s3_bucket_acl" "example" {
 
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
                   <div className="container mx-auto flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={handleSave}>
-                      保存
+                    <Button type="button" variant="outline" onClick={handleCheck}>
+                      账号信息检查
                     </Button>
-                    <Button type="button" onClick={handleNext}>
+                    <Button 
+                      type="button" 
+                      onClick={handleNext}
+                      disabled={!verificationPassed || !infrastructureChecked}
+                    >
                       下一步
                     </Button>
                   </div>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        ) : currentPage === 2 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>权限检查</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-12">
-                {!verificationPassed ? (
-                  <div className="flex flex-col items-center space-y-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                    <p className="text-gray-600">正在验证账号权限，请稍等...</p>
-                  </div>
-                ) : (
-                  <div className="text-center text-green-600 mb-4">
-                    权限验证通过
-                  </div>
-                )}
-                
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
-                  <div className="container mx-auto flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={handlePrevious}>
-                      上一步
-                    </Button>
-                    <Button 
-                      type="button" 
-                      onClick={handleNext}
-                      disabled={!verificationPassed}
-                    >
-                      检查通过下一步
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : currentPage === 3 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>源平台基础设施检查</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-full mb-8 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium mb-4">当前检查的源平台信息：</h3>
-                  <div className="space-y-2">
-                    <p>源平台：{formData.sourcePlatform === 'alicloud' ? '阿里云' : '腾讯云'}</p>
-                    <p>账号：{formData.sourceAccount}</p>
-                    <p>项目名称：{formData.projectName}</p>
-                  </div>
-                </div>
-
-                {!infrastructureChecked ? (
-                  <div className="flex flex-col items-center space-y-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                    <p className="text-gray-600">正在检查源平台基础设施，请稍等...</p>
-                  </div>
-                ) : (
-                  <div className="text-center text-green-600 mb-4">
-                    源平台基础设施检查完成
-                  </div>
-                )}
-                
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
-                  <div className="container mx-auto flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={handlePrevious}>
-                      上一步
-                    </Button>
-                    <Button 
-                      type="button" 
-                      onClick={handleNext}
-                      disabled={!infrastructureChecked}
-                    >
-                      检查通过下一步
-                    </Button>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
         ) : currentPage === 4 ? (
