@@ -129,7 +129,7 @@ export function MigrationWizard() {
       if (prev === 1) return 2;  // From basic info to migration analysis
       if (prev === 2) return 3;  // From migration analysis to resource mapping
       if (prev === 3) return 5;  // From resource mapping directly to deployment
-      if (prev === 5) return 6;  // From deployment to completion
+      if (prev === 5 && verificationPhase === 'deployment') return 6;  // From deployment to completion
       return prev;
     });
   };
@@ -753,22 +753,33 @@ export function MigrationWizard() {
               </div>
             )}
 
-            {currentPage === 6 && (
-              <>
-                {verificationPhase === 'deployment' && (
-                  <Button
-                    onClick={startDeployment}
-                    disabled={selectedResources.length === 0 || deploymentInProgress}
-                  >
-                    开始部署
-                  </Button>
-                )}
-                {verificationPhase === 'complete' && !deploymentInProgress && (
-                  <Button onClick={handleCompleteDeployment}>
-                    完成部署
-                  </Button>
-                )}
-              </>
+            {currentPage === 5 && (
+              <div className="flex space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={false}
+                >
+                  上一步
+                </Button>
+                <Button
+                  onClick={startDeployment}
+                  disabled={selectedResources.length === 0 || deploymentInProgress}
+                >
+                  开始部署
+                </Button>
+                <Button
+                  onClick={handleNext}
+                  disabled={!verificationPassed || deploymentInProgress}
+                >
+                  下一步
+                </Button>
+              </div>
+            )}
+            {currentPage === 6 && verificationPhase === 'complete' && !deploymentInProgress && (
+              <Button onClick={handleCompleteDeployment}>
+                完成部署
+              </Button>
             )}
           </div>
         </div>
