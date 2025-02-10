@@ -129,14 +129,12 @@ export function MigrationWizard() {
       if (prev === 1) return 2;  // From basic info to migration analysis
       if (prev === 2) return 3;  // From migration analysis to resource mapping
       if (prev === 3) return 5;  // From resource mapping directly to deployment
-      if (prev === 5 && verificationPhase === 'deployment') return 6;  // From deployment to completion
       return prev;
     });
   };
 
   const handlePrevious = () => {
     setCurrentPage(prev => {
-      if (prev === 6) return 5;  // From completion back to deployment
       if (prev === 5) return 3;  // From deployment back to resource mapping
       if (prev === 3) return 2;  // From resource mapping back to migration analysis
       if (prev === 2) return 1;  // From migration analysis back to basic info
@@ -191,14 +189,15 @@ export function MigrationWizard() {
     const resourceOrder: ResourceType[] = ['ram', 'network', 'compute', 'storage'];
     let currentResourceIndex = 0;
     
-    const deployNextResource = () => {
+    const deployNextResource = async () => {
       if (currentResourceIndex >= resourceOrder.length) {
         setDeploymentInProgress(false);
-        handleNext(); // Navigate to next page after deployment is complete
         return;
       }
 
       const resourceType = resourceOrder[currentResourceIndex];
+      
+      // Set current resource to in_progress
       setDeploymentProgress(prev => ({
         ...prev,
         [resourceType]: {
@@ -208,36 +207,34 @@ export function MigrationWizard() {
         }
       }));
 
-      let currentStep = 0;
+      // Process each step with a delay
       const resource = mockDeploymentProgress[resourceType];
-      
-      const processStep = () => {
-        if (currentStep >= resource.steps.length) {
-          setDeploymentProgress(prev => ({
-            ...prev,
-            [resourceType]: {
-              ...prev[resourceType as ResourceType],
-              status: 'completed' as const
-            }
-          }));
-          currentResourceIndex++;
-          setTimeout(deployNextResource, 1000);
-          return;
-        }
-
+      for (let step = 0; step < resource.steps.length; step++) {
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Longer delay for more visible progress
+        
         setDeploymentProgress(prev => ({
           ...prev,
           [resourceType]: {
             ...prev[resourceType as ResourceType],
-            currentStep: currentStep
+            currentStep: step
           }
         }));
+      }
 
-        currentStep++;
-        setTimeout(processStep, 2000);
-      };
+      // Mark resource as completed
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setDeploymentProgress(prev => ({
+        ...prev,
+        [resourceType]: {
+          ...prev[resourceType as ResourceType],
+          status: 'completed' as const
+        }
+      }));
 
-      processStep();
+      // Move to next resource
+      currentResourceIndex++;
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      deployNextResource();
     };
 
     deployNextResource();
@@ -564,8 +561,8 @@ export function MigrationWizard() {
               <CardTitle>部署</CardTitle>
             </CardHeader>
             <CardContent>
-              {verificationPhase === 'deployment' && (
-                <div className="space-y-6">
+              <div className="space-y-6">
+                {verificationPhase === 'deployment' && !deploymentInProgress && (
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <h3 className="font-medium mb-4">选择要部署的资源</h3>
                     <div className="space-y-3">
@@ -631,20 +628,8 @@ export function MigrationWizard() {
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {currentPage === 6 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>完成</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {verificationPhase === 'complete' && (
-                <div className="space-y-6">
+                )}
+                {deploymentInProgress && (
                   <div className="p-6 bg-blue-50 rounded-lg">
                     <h3 className="font-medium mb-4">部署进度</h3>
                     <div className="space-y-6">
@@ -687,11 +672,13 @@ export function MigrationWizard() {
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
+
+
 
         {/* Fixed bottom navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t">
@@ -732,44 +719,30 @@ export function MigrationWizard() {
             )}
 
             {currentPage === 3 && (
-              <div className="flex space-x-4">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={false}
-                >
-                  上一步
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!verificationPassed}
-                >
-                  下一步
-                </Button>
-              </div>
+              <Button
+                onClick={handleNext}
+                disabled={!verificationPassed}
+              >
+                下一步
+              </Button>
             )}
 
             {currentPage === 5 && (
-              <div className="flex space-x-4">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={false}
-                >
-                  上一步
-                </Button>
-                <Button
-                  onClick={startDeployment}
-                  disabled={selectedResources.length === 0 || deploymentInProgress}
-                >
-                  开始部署
-                </Button>
-              </div>
-            )}
-            {currentPage === 6 && verificationPhase === 'complete' && !deploymentInProgress && (
-              <Button onClick={handleCompleteDeployment}>
-                完成部署
-              </Button>
+              <>
+                {!deploymentInProgress && (
+                  <Button
+                    onClick={startDeployment}
+                    disabled={selectedResources.length === 0}
+                  >
+                    开始部署
+                  </Button>
+                )}
+                {deploymentInProgress && Object.values(deploymentProgress).every(r => r.status === 'completed') && (
+                  <Button onClick={handleCompleteDeployment}>
+                    完成部署
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
