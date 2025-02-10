@@ -668,28 +668,51 @@ resource "aws_s3_bucket_acl" "example" {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-8">
-                  {/* Left side: Source Platform Resources */}
-                  <div>
-                    <h3 className="font-medium text-lg mb-4">源平台资源</h3>
-                    <Accordion type="single" collapsible className="w-full">
-                      <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
-                    </Accordion>
+                <div className="space-y-8">
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Left side: Source Platform Resources */}
+                    <div>
+                      <h3 className="font-medium text-lg mb-4">源平台资源</h3>
+                      <Accordion type="single" collapsible className="w-full">
+                        <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
+                        <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
+                        <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
+                        <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
+                      </Accordion>
+                    </div>
+
+                    {/* Right side: AWS Resources */}
+                    <div>
+                      <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
+                      <Accordion type="single" collapsible className="w-full">
+                        <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
+                        <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
+                        <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
+                        <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
+                      </Accordion>
+                    </div>
                   </div>
 
-                  {/* Right side: AWS Resources */}
-                  <div>
-                    <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
-                    <Accordion type="single" collapsible className="w-full">
-                      <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
-                    </Accordion>
-                  </div>
+                  {/* Verification Process Section */}
+                  {verificationPhase === 'testing' && (
+                    <div className="w-full p-6 bg-blue-50 rounded-lg">
+                      <h3 className="font-medium mb-4">验证过程</h3>
+                      <div className="space-y-3">
+                        {verificationThoughts.map((thought, index) => (
+                          <div key={index} className="flex items-start space-x-3">
+                            <div className="mt-1.5">
+                              {index === verificationThoughts.length - 1 ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                              ) : (
+                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                              )}
+                            </div>
+                            <p className="text-gray-600">{thought}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
