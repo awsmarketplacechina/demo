@@ -245,9 +245,9 @@ resource "aws_s3_bucket_acl" "example" {
   const [analyzedResources, setAnalyzedResources] = useState<string[]>([])
 
   useEffect(() => {
-    if (currentPage === 2) {
+    if (currentPage === 2 && mockThoughts.length === 0) {
+      // Only reset and start analysis if not already done
       setResourceMappingComplete(false)
-      setMockThoughts([])
       setAnalyzedResources([])
       // Mock resource mapping process
       const addThought = (index: number) => {
