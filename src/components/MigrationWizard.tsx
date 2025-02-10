@@ -128,14 +128,16 @@ export function MigrationWizard() {
     setCurrentPage(prev => {
       if (prev === 1) return 2;  // From basic info to migration analysis
       if (prev === 2) return 3;  // From migration analysis to resource mapping
-      if (prev === 3) return 6;  // From resource mapping directly to deployment
+      if (prev === 3) return 5;  // From resource mapping directly to deployment
+      if (prev === 5) return 6;  // From deployment to completion
       return prev;
     });
   };
 
   const handlePrevious = () => {
     setCurrentPage(prev => {
-      if (prev === 6) return 3;  // From deployment back to resource mapping
+      if (prev === 6) return 5;  // From completion back to deployment
+      if (prev === 5) return 3;  // From deployment back to resource mapping
       if (prev === 3) return 2;  // From resource mapping back to migration analysis
       if (prev === 2) return 1;  // From migration analysis back to basic info
       return prev;
@@ -166,12 +168,16 @@ export function MigrationWizard() {
   const handleVerification = () => {
     setVerificationPhase('testing');
     setVerificationThoughts([]);
-    // Mock verification process
+    
     const addVerificationThought = (index: number) => {
       if (index < mockVerificationThoughts.length) {
         setVerificationThoughts(prev => [...prev, mockVerificationThoughts[index]]);
         if (index === mockVerificationThoughts.length - 1) {
           setVerificationPassed(true);
+          setVerificationPhase('preview');  // Auto transition to preview
+          setTimeout(() => {
+            setVerificationPhase('deployment');  // Auto transition to deployment
+          }, 2000);
         }
         setTimeout(() => addVerificationThought(index + 1), 1500);
       }
@@ -516,20 +522,10 @@ export function MigrationWizard() {
                     </Accordion>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
-        {currentPage === 6 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>验证和部署</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {verificationPhase === 'testing' && (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <div className="w-full p-6 bg-blue-50 rounded-lg">
+                {/* Verification Process Section */}
+                {verificationPhase === 'testing' && (
+                  <div className="mt-6 p-6 bg-blue-50 rounded-lg">
                     <h3 className="font-medium mb-4">验证过程</h3>
                     <div className="space-y-3">
                       {verificationThoughts.map((thought, index) => (
@@ -546,34 +542,28 @@ export function MigrationWizard() {
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {verificationPhase === 'preview' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-8">
-                    <div>
-                      <h3 className="font-medium text-lg mb-4">源平台资源</h3>
-                      <Accordion type="single" collapsible className="w-full">
-                        <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={true} verificationPhase={verificationPhase} />
-                        <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={true} verificationPhase={verificationPhase} />
-                        <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={true} verificationPhase={verificationPhase} />
-                        <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={true} verificationPhase={verificationPhase} />
-                      </Accordion>
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg mb-4">AWS 资源预览</h3>
-                      <Accordion type="single" collapsible className="w-full">
-                        <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={true} verificationPhase={verificationPhase} />
-                        <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={true} verificationPhase={verificationPhase} />
-                        <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={true} verificationPhase={verificationPhase} />
-                        <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={true} verificationPhase={verificationPhase} />
-                      </Accordion>
-                    </div>
+                {/* Preview Section */}
+                {verificationPhase === 'preview' && (
+                  <div className="mt-6 p-6 bg-green-50 rounded-lg">
+                    <h3 className="font-medium mb-4">验证完成</h3>
+                    <p className="text-green-600">资源映射验证通过，可以进行下一步操作。</p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
+
+
+        {currentPage === 5 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>部署</CardTitle>
+            </CardHeader>
+            <CardContent>
               {verificationPhase === 'deployment' && (
                 <div className="space-y-6">
                   <div className="p-4 bg-gray-50 rounded-lg">
@@ -643,7 +633,16 @@ export function MigrationWizard() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        )}
 
+        {currentPage === 6 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>完成</CardTitle>
+            </CardHeader>
+            <CardContent>
               {verificationPhase === 'complete' && (
                 <div className="space-y-6">
                   <div className="p-6 bg-blue-50 rounded-lg">
@@ -733,7 +732,14 @@ export function MigrationWizard() {
             )}
 
             {currentPage === 3 && (
-              <>
+              <div className="flex space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={false}
+                >
+                  上一步
+                </Button>
                 <Button
                   variant="outline"
                   onClick={handleVerification}
@@ -747,7 +753,7 @@ export function MigrationWizard() {
                 >
                   下一步
                 </Button>
-              </>
+              </div>
             )}
 
             {currentPage === 6 && (
