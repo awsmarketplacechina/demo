@@ -1,15 +1,21 @@
 import { ReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ResourceNode } from './nodes/ResourceNode';
+import { mockDeployedResources, mockEdges } from '../mocks/resources';
+import { convertToCloudFormation, formatCloudFormation } from '../utils/cloudformation';
+import { DeployedResource } from '../types/resources';
 
-interface ResourceNode {
+interface ResourceNodeData {
+  name: string;
+  status: string;
+  details: Record<string, any>;
+  cloudformation: string;
+}
+
+interface ResourceNodeType {
   id: string;
-  type: 'iam' | 'network' | 'compute' | 'storage';
-  data: {
-    name: string;
-    status: string;
-    details: Record<string, any>;
-  };
+  type: string;
+  data: ResourceNodeData;
   position: { x: number; y: number };
 }
 
@@ -17,49 +23,32 @@ const nodeTypes = {
   resourceNode: ResourceNode,
 };
 
-export const ResourceTopology = () => {
-  // Mock nodes for testing
-  const initialNodes = [
-    {
-      id: 'iam-1',
-      type: 'resourceNode',
-      data: { 
-        name: 'IAM用户1', 
-        status: '已部署',
-        details: {
-          permissions: ['AWSFullAccess']
-        }
-      },
-      position: { x: 100, y: 100 },
+const createResourceNode = (resource: DeployedResource, index: number): ResourceNodeType => {
+  const template = convertToCloudFormation(resource);
+  return {
+    id: resource.id,
+    type: 'resourceNode',
+    data: {
+      name: resource.name,
+      status: resource.status,
+      details: resource.details,
+      cloudformation: formatCloudFormation(template)
     },
-    {
-      id: 'network-1',
-      type: 'resourceNode',
-      data: { 
-        name: 'VPC配置', 
-        status: '已部署',
-        details: {
-          cidr: '10.0.0.0/16'
-        }
-      },
-      position: { x: 100, y: 250 },
-    },
-  ];
+    position: {
+      x: 100 + (index % 2) * 300,
+      y: 100 + Math.floor(index / 2) * 200
+    }
+  };
+};
 
-  const initialEdges = [
-    {
-      id: 'e1-2',
-      source: 'iam-1',
-      target: 'network-1',
-      animated: true,
-    },
-  ];
+export const ResourceTopology = () => {
+  const nodes = mockDeployedResources.map(createResourceNode);
 
   return (
     <div className="w-full h-[500px] border rounded-lg">
       <ReactFlow 
-        nodes={initialNodes}
-        edges={initialEdges}
+        nodes={nodes}
+        edges={mockEdges}
         nodeTypes={nodeTypes}
         fitView
       />
