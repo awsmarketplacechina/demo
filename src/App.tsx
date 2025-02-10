@@ -447,11 +447,6 @@ resource "aws_s3_bucket_acl" "example" {
                     </span>
                   </div>
                 </div>
-                <p className="text-gray-600">
-                  {checkPhase === 'source_permission' ? '正在验证源平台账号权限，请稍等...' : 
-                   checkPhase === 'aws_permission' ? '正在验证AWS账号权限，请稍等...' :
-                   '正在检查源平台资源，请稍等...'}
-                </p>
               </div>
             )}
             {checkPhase === 'complete' && (
