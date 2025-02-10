@@ -437,13 +437,15 @@ resource "aws_s3_bucket_acl" "example" {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                  <p className="text-sm text-gray-500">
-                    {checkPhase === 'source_permission' && '正在验证阿里云平台账号权限，请稍等...'}
-                    {checkPhase === 'aws_permission' && '正在验证AWS平台账号权限，请稍等...'}
-                    {checkPhase === 'source_resources' && '正在获取阿里云资源信息，请稍等...'}
-                  </p>
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                    <span className="text-sm text-gray-500">
+                      {checkPhase === 'source_permission' && '正在验证阿里云平台账号权限，请稍等...'}
+                      {checkPhase === 'aws_permission' && '正在验证AWS平台账号权限，请稍等...'}
+                      {checkPhase === 'source_resources' && '正在获取阿里云资源信息，请稍等...'}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-gray-600">
                   {checkPhase === 'source_permission' ? '正在验证源平台账号权限，请稍等...' : 
