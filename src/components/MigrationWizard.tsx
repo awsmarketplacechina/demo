@@ -171,10 +171,12 @@ export function MigrationWizard() {
       if (index < mockVerificationThoughts.length) {
         setVerificationThoughts(prev => [...prev, mockVerificationThoughts[index]]);
         if (index === mockVerificationThoughts.length - 1) {
-          setVerificationPassed(true);
           setVerificationPhase('preview');  // Auto transition to preview
           setTimeout(() => {
             setVerificationPhase('deployment');  // Auto transition to deployment
+            setTimeout(() => {
+              setVerificationPassed(true);  // Only set to true after all transitions
+            }, 2000);
           }, 2000);
         }
         setTimeout(() => addVerificationThought(index + 1), 1500);
@@ -293,6 +295,7 @@ export function MigrationWizard() {
     if (currentPage === 3) {
       setVerificationPhase('testing');
       setVerificationThoughts([]);
+      setVerificationPassed(false);  // Reset verification status
       setSelectedResources(['ram', 'network', 'compute', 'storage']);
       // Automatically start verification when entering resource mapping page
       setTimeout(() => handleVerification(), 500);
