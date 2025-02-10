@@ -295,6 +295,8 @@ export function MigrationWizard() {
       setVerificationPhase('testing');
       setVerificationThoughts([]);
       setSelectedResources(['ram', 'network', 'compute', 'storage']);
+      // Automatically start verification when entering resource mapping page
+      setTimeout(() => handleVerification(), 500);
     }
   }, [currentPage]);
 
@@ -737,13 +739,6 @@ export function MigrationWizard() {
                   disabled={false}
                 >
                   上一步
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleVerification}
-                  disabled={!resourceMappingComplete}
-                >
-                  验证
                 </Button>
                 <Button
                   onClick={handleNext}
