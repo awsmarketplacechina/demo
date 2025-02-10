@@ -726,7 +726,7 @@ export function MigrationWizard() {
             {currentPage === 3 && (
               <Button
                 onClick={handleNext}
-                disabled={!verificationPassed}
+                disabled={!verificationPassed || verificationPhase !== 'deployment'}
               >
                 下一步
               </Button>
