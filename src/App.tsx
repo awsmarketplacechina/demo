@@ -340,11 +340,19 @@ resource "aws_s3_bucket_acl" "example" {
   }
 
   const handleNext = () => {
-    setCurrentPage(prev => prev === 1 ? 4 : prev + 1)
+    setCurrentPage(prev => {
+      if (prev === 1) return 4  // From basic info to analysis
+      if (prev === 4) return 5  // From analysis to resource mapping
+      return prev + 1          // Default increment
+    })
   }
 
   const handlePrevious = () => {
-    setCurrentPage(prev => prev === 4 ? 1 : prev - 1)
+    setCurrentPage(prev => {
+      if (prev === 5) return 4  // From resource mapping to analysis
+      if (prev === 4) return 1  // From analysis to basic info
+      return prev - 1          // Default decrement
+    })
     setVerificationPassed(false)
   }
 
@@ -586,31 +594,32 @@ resource "aws_s3_bucket_acl" "example" {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-8">
-                  {/* Left side: Source Platform Resources */}
-                  <div>
-                    <h3 className="font-medium text-lg mb-4">源平台资源</h3>
-                    <Accordion type="single" collapsible className="w-full">
-                      <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
-                    </Accordion>
-                  </div>
-
-                  {/* Right side: AWS Resources */}
-                  <div>
-                    <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
-                    <Accordion type="single" collapsible className="w-full">
-                      <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
-                    </Accordion>
+                {/* Resource Analysis Process */}
+                <div className="p-6 bg-blue-50 rounded-lg">
+                  <h3 className="font-medium mb-4">资源转换分析过程</h3>
+                  <div className="space-y-3">
+                    {mockThoughts.map((thought, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <div className="mt-1.5">
+                          {index === mockThoughts.length - 1 && !resourceMappingComplete ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                          ) : (
+                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                          )}
+                        </div>
+                        <p className="text-gray-600">{thought}</p>
+                      </div>
+                    ))}
+                    {!resourceMappingComplete && (
+                      <div className="flex items-center space-x-2 text-gray-600">
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                        <span>分析中...</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* AWS Advantages - Only show after mapping complete */}
+                {/* AWS Advantages */}
                 {resourceMappingComplete ? (
                   <div className="mt-8 p-6 bg-gray-50 rounded-lg">
                     <h3 className="font-medium mb-4">AWS 组件优势</h3>
@@ -643,45 +652,68 @@ resource "aws_s3_bucket_acl" "example" {
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Devin's Thoughts */}
-              <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                <h3 className="font-medium mb-4">资源转换分析过程</h3>
-                <div className="space-y-3">
-                  {mockThoughts.map((thought, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="mt-1.5">
-                        {index === mockThoughts.length - 1 && !resourceMappingComplete ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                        ) : (
-                          <div className="h-2 w-2 rounded-full bg-blue-500" />
-                        )}
-                      </div>
-                      <p className="text-gray-600">{thought}</p>
-                    </div>
-                  ))}
-                  {!resourceMappingComplete && (
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                      <span>分析中...</span>
-                    </div>
-                  )}
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                  <div className="container mx-auto flex justify-end space-x-4">
+                    <Button type="button" variant="outline" onClick={handlePrevious}>
+                      上一步
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleNext}
+                      disabled={!resourceMappingComplete}
+                    >
+                      下一步
+                    </Button>
+                  </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        ) : currentPage === 5 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>资源映射详情</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Left side: Source Platform Resources */}
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">源平台资源</h3>
+                    <Accordion type="single" collapsible className="w-full">
+                      <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
+                    </Accordion>
+                  </div>
 
-              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
-                <div className="container mx-auto flex justify-end space-x-4">
-                  <Button type="button" variant="outline" onClick={handlePrevious}>
-                    上一步
-                  </Button>
-                  <Button 
-                    type="button" 
-                    onClick={handleNext}
-                    disabled={!resourceMappingComplete}
-                  >
-                    验证&amp;部署
-                  </Button>
+                  {/* Right side: AWS Resources */}
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
+                    <Accordion type="single" collapsible className="w-full">
+                      <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
+                    </Accordion>
+                  </div>
+                </div>
+
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-30">
+                  <div className="container mx-auto flex justify-end space-x-4">
+                    <Button type="button" variant="outline" onClick={handlePrevious}>
+                      上一步
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleNext}
+                      disabled={!resourceMappingComplete}
+                    >
+                      验证&amp;部署
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
