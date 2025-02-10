@@ -1,5 +1,72 @@
 import { DeployedResource, ResourceNode, ResourceEdge } from '../types/resources';
 
+export const mockSourceResources = {
+  ram: `resource "alicloud_ram_user" "example" {
+  name = "example"
+  display_name = "example"
+  mobile = "86-18688888888"
+  email = "hello.uuu@aaa.com"
+  comments = "yoyoyo"
+  force = true
+}`,
+  storage: `resource "alicloud_oss_bucket" "bucket-acl" {
+  bucket = "bucket-170309-acl"
+  acl = "private"
+}`,
+  network: `resource "alicloud_vpc" "vpc" {
+  vpc_name = "tf_test_foo"
+  cidr_block = "172.16.0.0/12"
+}`,
+  compute: `resource "alicloud_instance" "instance" {
+  instance_name = "test_foo"
+  instance_type = "ecs.n4.large"
+  system_disk_category = "cloud_efficiency"
+  image_id = "ubuntu_18_04_64_20G_alibase_20190624.vhd"
+  instance_charge_type = "PostPaid"
+  vswitch_id = alicloud_vswitch.vsw.id
+}`
+};
+
+export const mockAwsResources = {
+  ram: `resource "aws_iam_user" "example" {
+  name = "example"
+  path = "/"
+  force_destroy = true
+  
+  tags = {
+    Name = "example"
+    Email = "hello.uuu@aaa.com"
+  }
+}`,
+  storage: `resource "aws_s3_bucket" "example" {
+  bucket = "bucket-170309-acl"
+}
+
+resource "aws_s3_bucket_acl" "example" {
+  bucket = aws_s3_bucket.example.id
+  acl    = "private"
+}`,
+  network: `resource "aws_vpc" "main" {
+  cidr_block = "172.16.0.0/12"
+  
+  tags = {
+    Name = "tf_test_foo"
+  }
+}`,
+  compute: `resource "aws_instance" "example" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.large"
+  
+  root_block_device {
+    volume_type = "gp2"
+  }
+  
+  tags = {
+    Name = "test_foo"
+  }
+}`
+};
+
 export const mockDeployedResources: DeployedResource[] = [
   {
     id: 'iam-1',

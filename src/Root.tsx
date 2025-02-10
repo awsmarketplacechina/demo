@@ -5,6 +5,7 @@ import { MigrationWizard } from './components/MigrationWizard';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProjectProvider } from './contexts/ProjectContext';
 import { PrivateRoute } from './components/PrivateRoute';
+import './index.css';
 
 export function Root() {
   return (

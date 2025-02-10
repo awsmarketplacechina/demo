@@ -1,5 +1,3 @@
-import { ResourceType } from '../types/deployment';
-
 export const mockDeploymentProgress = {
   ram: {
     steps: [

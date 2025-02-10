@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError } = useAuth();
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = React.useState<{ username: string; password: string }>({
     username: '',
     password: ''
   });
