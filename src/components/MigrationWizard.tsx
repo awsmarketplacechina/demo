@@ -193,7 +193,7 @@ export function MigrationWizard() {
     
     const deployNextResource = async () => {
       if (currentResourceIndex >= resourceOrder.length) {
-        setDeploymentInProgress(false);
+        // Keep deploymentInProgress true until user clicks "完成部署"
         return;
       }
 
@@ -243,6 +243,9 @@ export function MigrationWizard() {
   };
 
   const handleCompleteDeployment = () => {
+    // Set deployment state to complete
+    setDeploymentInProgress(false);
+    
     const newProject = {
       id: Date.now(),
       name: formData.projectName,
@@ -255,7 +258,7 @@ export function MigrationWizard() {
     };
     
     addProject(newProject);
-    navigate(`/projects/${newProject.id}/details`);
+    navigate('/projects');
   };
 
   // Effects
