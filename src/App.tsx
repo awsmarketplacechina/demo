@@ -424,21 +424,23 @@ resource "aws_s3_bucket_acl" "example" {
                   {checkPhase === 'source_permission' && (
                     <div className="space-y-2">
                       <p>阿里云账号：{formData.sourceAccount}</p>
-                      <p>正在验证阿里云平台账号权限，请稍等...</p>
                     </div>
                   )}
                   {checkPhase === 'aws_permission' && (
                     <div className="space-y-2">
                       <p>AWS账号：{formData.awsAccount}</p>
-                      <p>正在验证AWS平台账号权限，请稍等...</p>
                     </div>
                   )}
                   {checkPhase === 'source_resources' && (
                     <div className="space-y-2">
                       <p>阿里云账号：{formData.sourceAccount}</p>
-                      <p>正在获取阿里云资源信息，请稍等...</p>
                     </div>
                   )}
+                  <p className="text-center text-sm text-gray-500 mt-4">
+                    {checkPhase === 'source_permission' && '正在验证阿里云平台账号权限，请稍等...'}
+                    {checkPhase === 'aws_permission' && '正在验证AWS平台账号权限，请稍等...'}
+                    {checkPhase === 'source_resources' && '正在获取阿里云资源信息，请稍等...'}
+                  </p>
                 </div>
                 <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                 <p className="text-gray-600">
