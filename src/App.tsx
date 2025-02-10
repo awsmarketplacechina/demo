@@ -698,11 +698,18 @@ resource "aws_s3_bucket_acl" "example" {
                       上一步
                     </Button>
                     <Button 
-                      type="button" 
-                      onClick={handleNext}
+                      type="button"
+                      onClick={() => setVerificationPhase('testing')}
                       disabled={!resourceMappingComplete}
                     >
-                      验证&amp;部署
+                      验证
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleNext}
+                      disabled={!verificationPassed}
+                    >
+                      下一步
                     </Button>
                   </div>
                 </div>
