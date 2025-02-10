@@ -1,29 +1,27 @@
-import { ReactFlow } from '@xyflow/react';
+import { ReactFlow, Node, NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ResourceNode } from './nodes/ResourceNode';
 import { mockDeployedResources, mockEdges } from '../mocks/resources';
 import { convertToCloudFormation, formatCloudFormation } from '../utils/cloudformation';
 import { DeployedResource } from '../types/resources';
 
-interface ResourceNodeData {
+type ResourceNodeData = {
   name: string;
   status: string;
   details: Record<string, any>;
   cloudformation: string;
-}
+} & Record<string, unknown>;
 
-interface ResourceNodeType {
-  id: string;
-  type: string;
-  data: ResourceNodeData;
-  position: { x: number; y: number };
-}
+type CustomNode = Node<ResourceNodeData>;
+type CustomNodeTypes = NodeTypes & {
+  resourceNode: typeof ResourceNode;
+};
 
-const nodeTypes = {
+const nodeTypes: CustomNodeTypes = {
   resourceNode: ResourceNode,
 };
 
-const createResourceNode = (resource: DeployedResource, index: number): ResourceNodeType => {
+const createResourceNode = (resource: DeployedResource, index: number): CustomNode => {
   const template = convertToCloudFormation(resource);
   return {
     id: resource.id,
