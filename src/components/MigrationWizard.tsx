@@ -242,16 +242,18 @@ export function MigrationWizard() {
 
   const handleCompleteDeployment = () => {
     const newProject = {
+      id: Date.now(),
       name: formData.projectName,
       sourcePlatform: formData.sourcePlatform,
       sourceAccount: formData.sourceAccount,
       targetPlatform: 'AWS',
       targetAccount: formData.awsAccount,
-      status: '配置完成' as const
+      status: '配置完成' as const,
+      createdAt: new Date().toISOString()
     };
     
     addProject(newProject);
-    navigate('/projects');
+    navigate(`/projects/${newProject.id}/details`);
   };
 
   // Effects
@@ -729,7 +731,7 @@ export function MigrationWizard() {
 
             {currentPage === 5 && (
               <>
-                {!deploymentInProgress && (
+                {!deploymentInProgress && verificationPhase === 'deployment' && (
                   <Button
                     onClick={startDeployment}
                     disabled={selectedResources.length === 0}
