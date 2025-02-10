@@ -434,6 +434,7 @@ resource "aws_s3_bucket_acl" "example" {
                   {checkPhase === 'source_resources' && (
                     <div className="space-y-2">
                       <p>阿里云账号：{formData.sourceAccount}</p>
+                      <p>正在获取阿里云资源信息，请稍等...</p>
                     </div>
                   )}
                 </div>
