@@ -246,21 +246,6 @@ resource "aws_s3_bucket_acl" "example" {
 
   useEffect(() => {
     if (currentPage === 2) {
-      // Mock verification process with 3-second delay
-      const timer = setTimeout(() => {
-        setVerificationPassed(true)
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-    if (currentPage === 3) {
-      setInfrastructureChecked(false)
-      // Mock infrastructure check with 3-second delay
-      const timer = setTimeout(() => {
-        setInfrastructureChecked(true)
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-    if (currentPage === 4) {
       setResourceMappingComplete(false)
       setMockThoughts([])
       setAnalyzedResources([])
@@ -295,7 +280,7 @@ resource "aws_s3_bucket_acl" "example" {
       }
       setTimeout(() => addThought(0), 1000)
     }
-    if (currentPage === 5) {
+    if (currentPage === 3) {
       setVerificationPhase('testing')
       setVerificationThoughts([])
       // Set all resources selected by default
@@ -304,6 +289,9 @@ resource "aws_s3_bucket_acl" "example" {
       const addVerificationThought = (index: number) => {
         if (index < mockVerificationThoughts.length) {
           setVerificationThoughts(prev => [...prev, mockVerificationThoughts[index]])
+          if (index === mockVerificationThoughts.length - 1) {
+            setVerificationPassed(true)
+          }
           setTimeout(() => addVerificationThought(index + 1), 1500)
         }
       }
@@ -341,19 +329,22 @@ resource "aws_s3_bucket_acl" "example" {
 
   const handleNext = () => {
     setCurrentPage(prev => {
-      if (prev === 1) return 4  // From basic info to analysis
-      if (prev === 4) return 5  // From analysis to resource mapping
-      return prev + 1          // Default increment
+      if (prev === 1) return 2  // From basic info to migration analysis
+      if (prev === 2) return 3  // From migration analysis to resource mapping
+      if (prev === 3) return 6  // From resource mapping directly to deployment
+      return prev
     })
   }
 
   const handlePrevious = () => {
     setCurrentPage(prev => {
-      if (prev === 5) return 4  // From resource mapping to analysis
-      if (prev === 4) return 1  // From analysis to basic info
-      return prev - 1          // Default decrement
+      if (prev === 6) return 3  // From deployment back to resource mapping
+      if (prev === 3) return 2  // From resource mapping back to migration analysis
+      if (prev === 2) return 1  // From migration analysis back to basic info
+      return prev
     })
     setVerificationPassed(false)
+    setVerificationPhase('testing')
   }
 
   const startDeployment = () => {
@@ -587,7 +578,7 @@ resource "aws_s3_bucket_acl" "example" {
               </form>
             </CardContent>
           </Card>
-        ) : currentPage === 4 ? (
+        ) : currentPage === 2 ? (
           <Card>
             <CardHeader>
               <CardTitle>资源映射分析</CardTitle>
@@ -670,7 +661,7 @@ resource "aws_s3_bucket_acl" "example" {
               </div>
             </CardContent>
           </Card>
-        ) : currentPage === 5 ? (
+        ) : currentPage === 3 ? (
           <Card>
             <CardHeader>
               <CardTitle>资源映射详情</CardTitle>
