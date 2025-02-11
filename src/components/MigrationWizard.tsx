@@ -10,7 +10,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useProjects } from '../contexts/ProjectContext';
 import { mockDeploymentProgress, mockDevinThoughts, mockVerificationThoughts } from '../mocks/deployment';
-import { mockSourceResources, mockAwsResources } from '../mocks/resources';
+import { resourceDiscoveryService } from '../services/ResourceDiscoveryService';
 import { ResourceType, VerificationPhase, CheckPhase, FormData } from '../types/deployment';
 
 interface ResourceSectionProps {
@@ -263,37 +263,60 @@ export function MigrationWizard() {
 
   // Effects
   useEffect(() => {
-    if (currentPage === 2 && mockThoughts.length === 0) {
+    if (currentPage === 2) {
       setResourceMappingComplete(false);
       setAnalyzedResources([]);
-      const addThought = (index: number) => {
-        if (index < mockDevinThoughts.length) {
-          setMockThoughts(prev => [...prev, mockDevinThoughts[index]]);
-          if (index === 1) {
-            setAnalyzedResources(prev => [...prev, 'ram']);
-            const advantages = generateAwsAdvantages('ram', mockSourceResources.ram, mockAwsResources.ram);
-            setAwsAdvantages(prev => ({ ...prev, ram: advantages }));
+      setMockThoughts([]);
+
+      const discoverAndAnalyzeResources = async () => {
+        try {
+          // Start resource discovery
+          setMockThoughts(prev => [...prev, '开始分析源平台资源...']);
+          
+          const resources = await resourceDiscoveryService.discoverResources({
+            platform: 'alicloud',
+            accessKeyId: formData.sourceAK,
+            secretAccessKey: formData.sourceSK,
+            region: formData.sourceRegion
+          });
+
+          // Analyze each resource type
+          const resourceTypes: ResourceType[] = ['ram', 'network', 'compute', 'storage'];
+          
+          for (const type of resourceTypes) {
+            setMockThoughts(prev => [...prev, `分析${type}资源配置...`]);
+            setAnalyzedResources(prev => [...prev, type]);
+            
+            // Generate AWS advantages for each resource type
+            const advantages = resources[type].map(resource => {
+              const awsAdvantages = generateAwsAdvantages(type, JSON.stringify(resource.config), '');
+              return awsAdvantages;
+            }).flat();
+            
+            setAwsAdvantages(prev => ({ ...prev, [type]: advantages }));
+            
+            // Add small delay between resource types
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
-          if (index === 2) {
-            setAnalyzedResources(prev => [...prev, 'network']);
-            const advantages = generateAwsAdvantages('network', mockSourceResources.network, mockAwsResources.network);
-            setAwsAdvantages(prev => ({ ...prev, network: advantages }));
+
+          // Validate resource compatibility
+          setMockThoughts(prev => [...prev, '验证资源兼容性...']);
+          const isCompatible = await resourceDiscoveryService.validateResourceCompatibility(resources);
+          
+          if (!isCompatible) {
+            throw new Error('资源兼容性验证失败');
           }
-          if (index === 3) {
-            setAnalyzedResources(prev => [...prev, 'compute']);
-            const advantages = generateAwsAdvantages('compute', mockSourceResources.compute, mockAwsResources.compute);
-            setAwsAdvantages(prev => ({ ...prev, compute: advantages }));
-          }
-          if (index === 4) {
-            setAnalyzedResources(prev => [...prev, 'storage']);
-            const advantages = generateAwsAdvantages('storage', mockSourceResources.storage, mockAwsResources.storage);
-            setAwsAdvantages(prev => ({ ...prev, storage: advantages }));
-            setResourceMappingComplete(true);
-          }
-          setTimeout(() => addThought(index + 1), 1500);
+
+          setMockThoughts(prev => [...prev, '资源分析完成，可以进行迁移']);
+          setResourceMappingComplete(true);
+        } catch (error) {
+          console.error('Resource discovery failed:', error);
+          setMockThoughts(prev => [...prev, `资源分析失败: ${error instanceof Error ? error.message : '未知错误'}`]);
+          setResourceMappingComplete(false);
         }
       };
-      setTimeout(() => addThought(0), 1000);
+
+      discoverAndAnalyzeResources();
     }
     if (currentPage === 3) {
       setVerificationPhase('testing');
