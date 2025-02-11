@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useProjects } from '../contexts/ProjectContext';
-import { mockDeploymentProgress, mockDevinThoughts, mockVerificationThoughts } from '../mocks/deployment';
+import { mockDeploymentProgress, mockVerificationThoughts } from '../mocks/deployment';
 import { resourceDiscoveryService } from '../services/ResourceDiscoveryService';
 import { ResourceType, VerificationPhase, CheckPhase, FormData } from '../types/deployment';
 
@@ -44,6 +44,8 @@ export function MigrationWizard() {
   const [infrastructureChecked, setInfrastructureChecked] = useState(false);
   const [resourceMappingComplete, setResourceMappingComplete] = useState(false);
   const [mockThoughts, setMockThoughts] = useState<string[]>([]);
+  const [discoveredResources, setDiscoveredResources] = useState<Record<ResourceType, any[]> | null>(null);
+  const [mappedAwsResources, setMappedAwsResources] = useState<Record<ResourceType, any[]> | null>(null);
   const [verificationPhase, setVerificationPhase] = useState<VerificationPhase>('testing');
   const [verificationThoughts, setVerificationThoughts] = useState<string[]>([]);
   const [selectedResources, setSelectedResources] = useState<ResourceType[]>([]);
@@ -59,7 +61,9 @@ export function MigrationWizard() {
     sourceSK: '',
     awsAccount: '',
     awsAK: '',
-    awsSK: ''
+    awsSK: '',
+    sourceRegion: 'cn-hangzhou',
+    targetRegion: 'us-east-1'
   });
 
   // AWS advantages state
@@ -267,6 +271,8 @@ export function MigrationWizard() {
       setResourceMappingComplete(false);
       setAnalyzedResources([]);
       setMockThoughts([]);
+      setDiscoveredResources(null);
+      setMappedAwsResources(null);
 
       const discoverAndAnalyzeResources = async () => {
         try {
@@ -279,6 +285,8 @@ export function MigrationWizard() {
             secretAccessKey: formData.sourceSK,
             region: formData.sourceRegion
           });
+
+          setDiscoveredResources(resources);
 
           // Analyze each resource type
           const resourceTypes: ResourceType[] = ['ram', 'network', 'compute', 'storage'];
@@ -307,12 +315,27 @@ export function MigrationWizard() {
             throw new Error('资源兼容性验证失败');
           }
 
+          // Generate mapped AWS resources
+          const mappedResources = Object.fromEntries(
+            Object.entries(resources).map(([type, items]) => [
+              type,
+              items.map(item => ({
+                ...item,
+                platform: 'aws',
+                config: {} // AWS specific config will be added here
+              }))
+            ])
+          ) as Record<ResourceType, any[]>;
+          
+          setMappedAwsResources(mappedResources);
           setMockThoughts(prev => [...prev, '资源分析完成，可以进行迁移']);
           setResourceMappingComplete(true);
         } catch (error) {
           console.error('Resource discovery failed:', error);
           setMockThoughts(prev => [...prev, `资源分析失败: ${error instanceof Error ? error.message : '未知错误'}`]);
           setResourceMappingComplete(false);
+          setDiscoveredResources(null);
+          setMappedAwsResources(null);
         }
       };
 
@@ -536,20 +559,20 @@ export function MigrationWizard() {
                   <div>
                     <h3 className="font-medium text-lg mb-4">源平台资源</h3>
                     <Accordion type="single" collapsible className="w-full">
-                      <ResourceSection title="RAM 用户" code={mockSourceResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="网络" code={mockSourceResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="计算" code={mockSourceResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="存储" code={mockSourceResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="RAM 用户" code={JSON.stringify(discoveredResources?.ram || [], null, 2)} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="网络" code={JSON.stringify(discoveredResources?.network || [], null, 2)} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="计算" code={JSON.stringify(discoveredResources?.compute || [], null, 2)} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="存储" code={JSON.stringify(discoveredResources?.storage || [], null, 2)} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
                     </Accordion>
                   </div>
 
                   <div>
                     <h3 className="font-medium text-lg mb-4">AWS 资源映射</h3>
                     <Accordion type="single" collapsible className="w-full">
-                      <ResourceSection title="IAM 用户" code={mockAwsResources.ram} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="网络" code={mockAwsResources.network} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="计算" code={mockAwsResources.compute} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
-                      <ResourceSection title="存储" code={mockAwsResources.storage} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="IAM 用户" code={JSON.stringify(mappedAwsResources?.ram || [], null, 2)} isAnalyzed={analyzedResources.includes('ram')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="网络" code={JSON.stringify(mappedAwsResources?.network || [], null, 2)} isAnalyzed={analyzedResources.includes('network')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="计算" code={JSON.stringify(mappedAwsResources?.compute || [], null, 2)} isAnalyzed={analyzedResources.includes('compute')} verificationPhase={verificationPhase} />
+                      <ResourceSection title="存储" code={JSON.stringify(mappedAwsResources?.storage || [], null, 2)} isAnalyzed={analyzedResources.includes('storage')} verificationPhase={verificationPhase} />
                     </Accordion>
                   </div>
                 </div>
