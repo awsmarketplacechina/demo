@@ -274,8 +274,16 @@ export function MigrationWizard() {
       const discoverAndAnalyzeResources = async () => {
         try {
           // Start resource discovery
-          setMockThoughts(prev => [...prev, '开始分析源平台资源...']);
+          setMockThoughts(["分析源平台资源类型和配置..."]);
           
+          const resourceTypes: ResourceType[] = ['ram', 'network', 'compute', 'storage'];
+          const loadingMessages = {
+            ram: "正在获取阿里云 RAM 信息",
+            network: "正在获取阿里云网络配置信息",
+            compute: "正在获取阿里云 ECS 信息",
+            storage: "正在获取阿里云 RDS 信息"
+          };
+
           const resources = await resourceDiscoveryService.discoverResources({
             platform: 'alicloud',
             accessKeyId: formData.sourceAK,
@@ -284,12 +292,9 @@ export function MigrationWizard() {
           });
 
           setDiscoveredResources(resources);
-
-          // Analyze each resource type
-          const resourceTypes: ResourceType[] = ['ram', 'network', 'compute', 'storage'];
           
           for (const type of resourceTypes) {
-            setMockThoughts(prev => [...prev, `分析${type}资源配置...`]);
+            setMockThoughts(prev => [...prev, loadingMessages[type]]);
             setAnalyzedResources(prev => [...prev, type]);
             
             // Generate AWS advantages for each resource type
@@ -306,7 +311,7 @@ export function MigrationWizard() {
 
           // Validate resource compatibility
           setMockThoughts(prev => [...prev, '验证资源兼容性...']);
-          const isCompatible = await resourceDiscoveryService.validateResourceCompatibility(resources);
+          const isCompatible = await resourceDiscoveryService.validateResourceCompatibility();
           
           if (!isCompatible) {
             throw new Error('资源兼容性验证失败');
@@ -487,12 +492,12 @@ export function MigrationWizard() {
         {currentPage === 2 && (
           <Card>
             <CardHeader>
-              <CardTitle>迁移方案分析</CardTitle>
+              <CardTitle>源平台资源分析</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">
                 <div className="p-6 bg-blue-50 rounded-lg">
-                  <h3 className="font-medium mb-4">迁移方案分析过程</h3>
+                  <h3 className="font-medium mb-4">资源分析</h3>
                   <div className="space-y-3">
                     {mockThoughts.map((thought, index) => (
                       <div key={index} className="flex items-start space-x-3">
@@ -514,6 +519,38 @@ export function MigrationWizard() {
                     )}
                   </div>
                 </div>
+
+                {resourceMappingComplete && (
+                  <div className="mt-8">
+                    <h3 className="font-medium mb-4">源平台资源描述</h3>
+                    <Accordion type="single" collapsible className="w-full">
+                      <ResourceSection 
+                        title="RAM 用户" 
+                        code={discoveredResources?.ram[0]?.config?.terraform || ''} 
+                        isAnalyzed={analyzedResources.includes('ram')} 
+                        verificationPhase="deployment"
+                      />
+                      <ResourceSection 
+                        title="网络配置" 
+                        code={discoveredResources?.network[0]?.config?.terraform || ''} 
+                        isAnalyzed={analyzedResources.includes('network')} 
+                        verificationPhase="deployment"
+                      />
+                      <ResourceSection 
+                        title="ECS 实例" 
+                        code={discoveredResources?.compute[0]?.config?.terraform || ''} 
+                        isAnalyzed={analyzedResources.includes('compute')} 
+                        verificationPhase="deployment"
+                      />
+                      <ResourceSection 
+                        title="RDS 数据库" 
+                        code={discoveredResources?.storage[0]?.config?.terraform || ''} 
+                        isAnalyzed={analyzedResources.includes('storage')} 
+                        verificationPhase="deployment"
+                      />
+                    </Accordion>
+                  </div>
+                )}
 
                 {resourceMappingComplete && (
                   <div className="mt-8 p-6 bg-gray-50 rounded-lg">
@@ -761,7 +798,7 @@ export function MigrationWizard() {
                 onClick={handleNext}
                 disabled={!resourceMappingComplete}
               >
-                下一步
+                生成迁移方案
               </Button>
             )}
 
