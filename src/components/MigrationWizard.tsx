@@ -63,8 +63,7 @@ export function MigrationWizard() {
     awsAK: '',
     awsSK: '',
     sourceRegion: 'cn-hangzhou',
-    targetRegion: 'us-east-1',
-    githubUrl: ''
+    targetRegion: 'us-east-1'
   });
 
   // AWS advantages state
@@ -154,16 +153,13 @@ export function MigrationWizard() {
       setCheckPhase('aws_permission');
       // Start AWS permission check
       setTimeout(() => {
-        setCheckPhase('source_resources');
-        // Start source resources check
+        setVerificationPassed(true);
+        setInfrastructureChecked(true);
+        setCheckPhase('complete');
         setTimeout(() => {
-          setVerificationPassed(true);
-          setInfrastructureChecked(true);
-          setCheckPhase('complete');
-          setTimeout(() => {
-            setShowCheckDialog(false);
-          }, 1000);
-        }, 3000);
+          setShowCheckDialog(false);
+          handleNext(); // Auto-navigate to page 3.2 after verification
+        }, 1000);
       }, 3000);
     }, 3000);
   };
@@ -356,7 +352,7 @@ export function MigrationWizard() {
       <Dialog open={showCheckDialog} onOpenChange={setShowCheckDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>账号信息检查</DialogTitle>
+            <DialogTitle>账号验证</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
             {checkPhase !== 'complete' && (
@@ -366,7 +362,6 @@ export function MigrationWizard() {
                   <span className="text-sm text-gray-500">
                     {checkPhase === 'source_permission' && '正在验证阿里云平台账号权限，请稍等...'}
                     {checkPhase === 'aws_permission' && '正在验证AWS平台账号权限，请稍等...'}
-                    {checkPhase === 'source_resources' && '正在获取阿里云资源信息，请稍等...'}
                   </span>
                 </div>
               </div>
@@ -392,7 +387,7 @@ export function MigrationWizard() {
         {currentPage === 1 && (
           <Card>
             <CardHeader>
-              <CardTitle>基本信息录入</CardTitle>
+              <CardTitle>账号录入</CardTitle>
             </CardHeader>
             <CardContent>
               <form className="space-y-6">
@@ -484,15 +479,6 @@ export function MigrationWizard() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="githubUrl">应用代码仓库地址</Label>
-                  <Input
-                    id="githubUrl"
-                    placeholder="请输入GitHub仓库地址"
-                    value={formData.githubUrl}
-                    onChange={handleInputChange('githubUrl')}
-                  />
-                </div>
               </form>
             </CardContent>
           </Card>
@@ -766,7 +752,7 @@ export function MigrationWizard() {
                 }}
                 disabled={!formData.projectName || !formData.sourceAccount || !formData.sourceAK || !formData.sourceSK || !formData.awsAccount || !formData.awsAK || !formData.awsSK}
               >
-                基本信息验证
+                账号验证
               </Button>
             )}
 
