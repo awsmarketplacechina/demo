@@ -8,19 +8,21 @@ class AuthAPI {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await fetch(`${this.baseUrl}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
-
-    if (!response.ok) {
-      throw new Error('Authentication failed');
+    // Mock implementation for testing
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+    
+    if (credentials.username === 'testuser' && credentials.password === 'testpass') {
+      return {
+        token: 'mock-jwt-token',
+        user: {
+          id: '1',
+          username: credentials.username,
+          role: 'user'
+        }
+      };
     }
-
-    return response.json();
+    
+    throw new Error('用户名或密码错误');
   }
 
   async logout(): Promise<void> {
