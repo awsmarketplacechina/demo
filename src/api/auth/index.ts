@@ -11,18 +11,15 @@ class AuthAPI {
     // Mock implementation for testing
     await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
     
-    if (credentials.username === 'testuser' && credentials.password === 'testpass') {
-      return {
-        token: 'mock-jwt-token',
-        user: {
-          id: '1',
-          username: credentials.username,
-          role: 'user'
-        }
-      };
-    }
-    
-    throw new Error('用户名或密码错误');
+    // Accept any username/password combination for mock usage
+    return {
+      token: 'mock-jwt-token',
+      user: {
+        id: '1',
+        username: credentials.username,
+        role: 'user'
+      }
+    };
   }
 
   async logout(): Promise<void> {
