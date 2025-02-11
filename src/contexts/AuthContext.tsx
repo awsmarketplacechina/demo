@@ -1,11 +1,14 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from '../api/auth';
+import { AuthResponse } from '../api/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  user: AuthResponse['user'] | null;
   login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -23,26 +26,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthResponse['user'] | null>(null);
 
   const login = async (username: string, password: string) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Mock authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock validation
       if (!username || !password) {
         throw new Error('请输入用户名和密码');
       }
       
-      // For demo purposes, accept any non-empty credentials
+      const response = await authAPI.login({ username, password });
+      
+      // Store token and user data
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
       setIsAuthenticated(true);
-      // Store auth state in localStorage for persistence
-      localStorage.setItem('isAuthenticated', 'true');
+      
+      console.log('Login successful:', response.user.username);
       return true;
     } catch (err) {
+      console.error('Login failed:', err);
       setError(err instanceof Error ? err.message : '登录失败，请重试');
       return false;
     } finally {
@@ -50,21 +55,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+      console.log('Logout successful');
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsAuthenticated(false);
+      setUser(null);
+      localStorage.removeItem('token');
+    }
   };
 
   const clearError = () => {
     setError(null);
   };
 
-  // Check localStorage on mount
-  React.useEffect(() => {
-    const storedAuth = localStorage.getItem('isAuthenticated');
-    if (storedAuth === 'true') {
-      setIsAuthenticated(true);
-    }
+  // Validate token on mount and after token changes
+  useEffect(() => {
+    const validateSession = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+
+      try {
+        const isValid = await authAPI.validateToken(token);
+        if (!isValid) {
+          throw new Error('Invalid token');
+        }
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Session validation failed:', err);
+        setIsAuthenticated(false);
+        setUser(null);
+        localStorage.removeItem('token');
+      }
+    };
+
+    validateSession();
   }, []);
 
   return (
@@ -73,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated, 
         isLoading, 
         error, 
+        user,
         login, 
         logout,
         clearError
