@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation template for S3 bucket (converted from Alibaba Cloud OSS)'
+
+Resources:
+  DemoS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'awsmp-demo-001'
+      AccessControl: Private
+      Tags:
+        - Key: Name
+          Value: awsmp-demo-001
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  BucketName:
+    Description: Name of the created S3 bucket
+    Value: !Ref DemoS3Bucket
+  BucketARN:
+    Description: ARN of the created S3 bucket
+    Value: !GetAtt DemoS3Bucket.Arn
