@@ -24,17 +24,18 @@ public class AwsConfig {
     
     @Bean
     public S3Client s3Client() {
-        S3Client.Builder builder = S3Client.builder()
-            .region(Region.of(region));
-            
-        // If credentials are provided via properties, use them
-        // Otherwise, fall back to default credential provider chain (IAM roles, etc.)
         if (accessKeyId != null && secretKey != null) {
-            builder.credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKeyId, secretKey)
-            ));
+            return S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretKey)
+                ))
+                .build();
         }
         
-        return builder.build();
+        // Fall back to default credential provider chain (IAM roles, etc.)
+        return S3Client.builder()
+            .region(Region.of(region))
+            .build();
     }
 }
