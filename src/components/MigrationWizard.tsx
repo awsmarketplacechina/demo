@@ -346,8 +346,7 @@ export function MigrationWizard() {
       setVerificationThoughts([]);
       setVerificationPassed(false);  // Reset verification status
       setSelectedResources(['ram', 'network', 'compute', 'storage']);
-      // Automatically start verification when entering resource mapping page
-      setTimeout(() => handleVerification(), 500);
+      // Removed automatic verification trigger - now triggered by button click
     }
   }, [currentPage]);
 
@@ -771,10 +770,16 @@ export function MigrationWizard() {
 
             {currentPage === 3 && (
               <Button
-                onClick={handleNext}
-                disabled={!verificationPassed || verificationPhase !== 'deployment'}
+                variant="outline"
+                onClick={async () => {
+                  await handleVerification();
+                  if (verificationPassed && verificationPhase === 'deployment') {
+                    handleNext();
+                  }
+                }}
+                disabled={verificationPhase === 'deployment'}
               >
-                下一步
+                基本信息验证
               </Button>
             )}
 
