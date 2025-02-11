@@ -746,21 +746,18 @@ export function MigrationWizard() {
             </Button>
 
             {currentPage === 1 && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleCheck}
-                  disabled={!formData.projectName || !formData.sourceAccount || !formData.sourceAK || !formData.sourceSK || !formData.awsAccount || !formData.awsAK || !formData.awsSK}
-                >
-                  账号信息检查
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!verificationPassed || !infrastructureChecked}
-                >
-                  下一步
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  await handleCheck();
+                  if (verificationPassed && infrastructureChecked) {
+                    handleNext();
+                  }
+                }}
+                disabled={!formData.projectName || !formData.sourceAccount || !formData.sourceAK || !formData.sourceSK || !formData.awsAccount || !formData.awsAK || !formData.awsSK}
+              >
+                基本信息验证
+              </Button>
             )}
 
             {currentPage === 2 && (
