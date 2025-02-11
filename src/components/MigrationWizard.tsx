@@ -63,7 +63,8 @@ export function MigrationWizard() {
     awsAK: '',
     awsSK: '',
     sourceRegion: 'cn-hangzhou',
-    targetRegion: 'us-east-1'
+    targetRegion: 'us-east-1',
+    githubUrl: ''
   });
 
   // AWS advantages state
@@ -480,6 +481,16 @@ export function MigrationWizard() {
                     placeholder="请输入AWS Secret Key"
                     value={formData.awsSK}
                     onChange={handleInputChange('awsSK')}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="githubUrl">应用代码仓库地址</Label>
+                  <Input
+                    id="githubUrl"
+                    placeholder="请输入GitHub仓库地址"
+                    value={formData.githubUrl}
+                    onChange={handleInputChange('githubUrl')}
                   />
                 </div>
               </form>

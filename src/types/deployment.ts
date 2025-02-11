@@ -52,4 +52,5 @@ export interface FormData {
   awsSK: string;
   sourceRegion: string;
   targetRegion: string;
+  githubUrl: string;
 }
