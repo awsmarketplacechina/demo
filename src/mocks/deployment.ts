@@ -49,10 +49,10 @@ export const mockDeploymentProgress = {
 
 export const mockDevinThoughts = [
   "分析源平台资源类型和配置...",
-  "将阿里云 RAM 用户映射到 AWS IAM 用户...",
-  "调整网络配置以匹配 AWS VPC 要求...",
-  "选择合适的 AWS 实例类型替代阿里云 ECS...",
-  "将阿里云 OSS 存储桶映射到 AWS S3..."
+  "正在获取阿里云 RAM 信息",
+  "正在获取阿里云网络配置信息",
+  "正在获取阿里云 ECS 信息",
+  "正在获取阿里云 RDS 信息"
 ];
 
 export const mockVerificationThoughts = [

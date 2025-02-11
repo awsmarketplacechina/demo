@@ -66,57 +66,10 @@ export function MigrationWizard() {
     targetRegion: 'us-east-1'
   });
 
-  // AWS advantages state
-  const [awsAdvantages, setAwsAdvantages] = useState<Record<string, string[]>>({
-    ram: [],
-    network: [],
-    compute: [],
-    storage: []
-  });
-
   // Analyzed resources state
   const [analyzedResources, setAnalyzedResources] = useState<string[]>([]);
 
   // Helper functions
-  const generateAwsAdvantages = (resourceType: string, sourceCode: string, awsCode: string) => {
-    // Simulated AI analysis based on resource comparison
-    const advantages: string[] = [];
-    
-    if (resourceType === 'ram') {
-      if (awsCode.includes('AWS::IAM::User')) {
-        advantages.push('支持资源完全清理，降低残留安全风险');
-      }
-      if (awsCode.includes('Tags:')) {
-        advantages.push('强大的标签管理功能，便于资源分类和权限控制');
-      }
-      advantages.push('与其他AWS服务无缝集成，统一的身份管理');
-      advantages.push('支持多因素认证（MFA）增强安全性');
-    } else if (resourceType === 'network') {
-      if (awsCode.includes('AWS::EC2::VPC')) {
-        advantages.push('灵活的VPC配置，支持复杂网络架构');
-      }
-      advantages.push('全球基础设施，低延迟高可用');
-      advantages.push('强大的安全组和网络ACL管理');
-    } else if (resourceType === 'compute') {
-      if (awsCode.includes('AWS::EC2::Instance')) {
-        advantages.push('丰富的实例类型满足不同需求');
-      }
-      if (sourceCode.includes('PostPaid')) {
-        advantages.push('灵活的计费模式，按需付费降低成本');
-      }
-      advantages.push('支持自动扩展，根据负载自动调整资源');
-    } else if (resourceType === 'storage') {
-      if (awsCode.includes('AWS::S3::Bucket')) {
-        advantages.push('全球分布式存储，数据高可用');
-      }
-      if (awsCode.includes('AccessControl')) {
-        advantages.push('细粒度的访问控制和权限管理');
-      }
-      advantages.push('多种存储类型满足不同场景需求');
-    }
-    
-    return advantages;
-  };
 
   // AWS advantages state is already declared above
 
@@ -273,8 +226,8 @@ export function MigrationWizard() {
 
       const discoverAndAnalyzeResources = async () => {
         try {
-          // Start resource discovery
-          setMockThoughts(prev => [...prev, '开始分析源平台资源...']);
+          // Start resource discovery with updated message
+          setMockThoughts(prev => [...prev, '分析源平台资源类型和配置...']);
           
           const resources = await resourceDiscoveryService.discoverResources({
             platform: 'alicloud',
@@ -285,20 +238,18 @@ export function MigrationWizard() {
 
           setDiscoveredResources(resources);
 
-          // Analyze each resource type
+          // Analyze each resource type with updated messages
           const resourceTypes: ResourceType[] = ['ram', 'network', 'compute', 'storage'];
+          const resourceMessages = {
+            ram: '正在获取阿里云 RAM 信息',
+            network: '正在获取阿里云网络配置信息',
+            compute: '正在获取阿里云 ECS 信息',
+            storage: '正在获取阿里云 RDS 信息'
+          };
           
           for (const type of resourceTypes) {
-            setMockThoughts(prev => [...prev, `分析${type}资源配置...`]);
+            setMockThoughts(prev => [...prev, resourceMessages[type]]);
             setAnalyzedResources(prev => [...prev, type]);
-            
-            // Generate AWS advantages for each resource type
-            const advantages = resources[type].map(resource => {
-              const awsAdvantages = generateAwsAdvantages(type, JSON.stringify(resource.config), '');
-              return awsAdvantages;
-            }).flat();
-            
-            setAwsAdvantages(prev => ({ ...prev, [type]: advantages }));
             
             // Add small delay between resource types
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -487,12 +438,12 @@ export function MigrationWizard() {
         {currentPage === 2 && (
           <Card>
             <CardHeader>
-              <CardTitle>迁移方案分析</CardTitle>
+              <CardTitle>源平台资源分析</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">
                 <div className="p-6 bg-blue-50 rounded-lg">
-                  <h3 className="font-medium mb-4">迁移方案分析过程</h3>
+                  <h3 className="font-medium mb-4">资源分析</h3>
                   <div className="space-y-3">
                     {mockThoughts.map((thought, index) => (
                       <div key={index} className="flex items-start space-x-3">
@@ -517,25 +468,50 @@ export function MigrationWizard() {
 
                 {resourceMappingComplete && (
                   <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-                    <h3 className="font-medium mb-4">AWS 组件优势</h3>
-                    <div className="grid grid-cols-2 gap-6">
-                      {Object.entries(awsAdvantages).map(([key, advantages]) => (
-                        <div key={key} className="p-4 bg-white rounded-lg shadow-sm">
-                          <h4 className="font-medium mb-2">
-                            {key === 'ram' ? 'IAM 用户' :
-                             key === 'network' ? '网络' :
-                             key === 'compute' ? '计算' : '存储'}
-                          </h4>
-                          <ul className="space-y-2">
-                            {advantages.map((advantage, index) => (
-                              <li key={index} className="flex items-start space-x-2">
-                                <div className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
-                                <span className="text-gray-600">{advantage}</span>
-                              </li>
+                    <h3 className="font-medium mb-4">源平台资源描述</h3>
+                    <div className="space-y-4">
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="ram">
+                          <AccordionTrigger>RAM 用户</AccordionTrigger>
+                          <AccordionContent>
+                            {discoveredResources?.ram.map((resource, index) => (
+                              <div key={index} className="p-2 border-b">
+                                <p className="text-sm text-gray-600">{resource.name}</p>
+                              </div>
                             ))}
-                          </ul>
-                        </div>
-                      ))}
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="network">
+                          <AccordionTrigger>网络配置</AccordionTrigger>
+                          <AccordionContent>
+                            {discoveredResources?.network.map((resource, index) => (
+                              <div key={index} className="p-2 border-b">
+                                <p className="text-sm text-gray-600">{resource.name}</p>
+                              </div>
+                            ))}
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="compute">
+                          <AccordionTrigger>ECS 实例</AccordionTrigger>
+                          <AccordionContent>
+                            {discoveredResources?.compute.map((resource, index) => (
+                              <div key={index} className="p-2 border-b">
+                                <p className="text-sm text-gray-600">{resource.name}</p>
+                              </div>
+                            ))}
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="storage">
+                          <AccordionTrigger>RDS 数据库</AccordionTrigger>
+                          <AccordionContent>
+                            {discoveredResources?.storage.map((resource, index) => (
+                              <div key={index} className="p-2 border-b">
+                                <p className="text-sm text-gray-600">{resource.name}</p>
+                              </div>
+                            ))}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     </div>
                   </div>
                 )}
@@ -761,7 +737,7 @@ export function MigrationWizard() {
                 onClick={handleNext}
                 disabled={!resourceMappingComplete}
               >
-                下一步
+                生成迁移方案
               </Button>
             )}
 
